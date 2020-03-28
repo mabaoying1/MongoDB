@@ -1,0 +1,134 @@
+package com.healthpay.iface.service.impl;
+
+import com.alibaba.fastjson.JSONObject;
+import com.healthpay.common.entity.ProRequest;
+import com.healthpay.common.entity.ProResponse;
+import com.healthpay.common.service.proCard.IPCardService;
+import com.healthpay.common.utils.DateUtils;
+import com.healthpay.common.utils.DbUtil;
+import com.healthpay.common.utils.RandomUtils;
+import com.healthpay.modules.sys.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.healthpay.common.Constant;
+import com.healthpay.common.exception.BusException;
+import com.healthpay.common.utils.MyBeanUtils;
+import com.healthpay.iface.annotation.BsoftCustomField;
+import com.healthpay.iface.util.StringUtils;
+import com.healthpay.iface.vo.ApplycardUpdateVo;
+import com.healthpay.iface.vo.ResResultVo;
+import com.healthpay.modules.hc.entity.HpCardholder;
+import com.healthpay.modules.hc.entity.HpHealthcard;
+import com.healthpay.modules.sys.entity.AreaBean;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+* @ClassName: A1006 
+* @Description: 修改健康卡相关数据
+* @author mabaoying
+* @date 2019年7月30日
+* @最后修改人：
+* @最后修改时间：
+*/
+@Service
+public class A1006 extends EHCAbstractHandlerImpl{
+	@BsoftCustomField
+	ApplycardUpdateVo vo;
+
+	@Autowired
+	private IPCardService proCardService;
+
+	public Object doHandler(String merid,String xml,String realPath) throws Exception {
+		ResResultVo ret=new ResResultVo();
+		String healthCardId = vo.getHealthCardId();
+		String status = Constant.IfaceStatus.SUCCESS;
+		String reason = "";
+		// 先身份认证
+		ResResultVo resultVo = checkIdentity(healthCardId);
+		if (!Constant.IfaceStatus.SUCCESS.equals(resultVo.getStatus())) {
+			throw new BusException(resultVo.getReason());
+		}
+		try {
+			// 获取健康卡记录
+			HpHealthcard hpHealthcard = hpHealthcardService.get(healthCardId);
+			if (null == hpHealthcard) {
+				throw new BusException("健康卡卡号错误");
+			}
+			// 获取持卡人记录
+			HpCardholder hpCardholder = hpCardholderService.get(hpHealthcard.getIdentityId());
+			// 每次地址都需要更新,所以先把地址相关字段都拷贝出来。
+			AreaBean areaBean = new AreaBean();
+
+			// 把orig和dest相同属性的value复制到dest中
+			MyBeanUtils.copyBean2Bean(areaBean, vo);
+			// 持卡人信息 对象拷贝,数据对象空值不拷贝到目标对象
+			MyBeanUtils.copyBeanNotNull2Bean(vo, hpCardholder);
+
+			// 卡数据信息
+			if (StringUtils.isNoneBlank(vo.getProvname2()) || StringUtils.isNoneBlank(vo.getCityname2())) {
+				MyBeanUtils.copyBean2Bean(hpCardholder, areaBean);// 覆盖原住址信息
+				MyBeanUtils.copyBean2Bean(hpHealthcard, areaBean);// 覆盖原住址信息
+			}
+
+			// 更新持卡人信息
+			User updateBy = new User();
+			updateBy.setId("1");//默认系统管理员
+			hpCardholder.setUpdateBy(updateBy);
+			hpCardholder.setUpdateDate(DbUtil.getDate());
+			hpCardholderService.update(hpCardholder);
+			// 更新健康卡信息
+			hpHealthcard.setUpdateBy(updateBy);
+			hpHealthcard.setUpdateDate(DbUtil.getDate());
+			hpHealthcardService.update(hpHealthcard);
+			// --------------------银联异步-------------------
+			// 把传送给网银的修改资料记录写入队列表
+			// HpIfaceMerchant gateway =
+			// hpIfaceMerchantService.getGateway("支付网关",99);
+			// if(gateway!=null){
+			// HpIfaceMsgqueue hpIfaceMsgqueue = new HpIfaceMsgqueue();
+			// hpIfaceMsgqueue.setMerId(gateway.getMerId());
+			// hpIfaceMsgqueue.setFuncid("P1007");
+			// hpIfaceMsgqueue.setIcCardId("");
+			// hpIfaceMsgqueue.setDocuid(hpCardholder.getDocuId());
+			// hpIfaceMsgqueue.setDocutype(hpCardholder.getDocuType());
+			// hpIfaceMsgqueue.setHealthcardid(healthCardId);
+			// hpIfaceMsgqueue.setCreatetime(new Date());
+			// hpIfaceMsgqueueService.save(hpIfaceMsgqueue);
+			// }
+
+
+			//修改省卡管电子健康卡信息
+			Map<String,Object> content=new HashMap<>();
+			content.put("ehealth_card_id",healthCardId);//电子健康卡ID
+			content.put("cellphone",vo.getPhone());//手机号
+			content.put("telephone",vo.getTel());//联系电话
+			content.put("address",vo.getAddress2());//居住地址
+			content.put("workcode",vo.getProfession());//职业代码
+			content.put("maritalstatus",vo.getMaritalStatus());//婚姻状态
+			content.put("alter_no",RandomUtils.getAlterNo());//外部变更流水号
+			content.put("alter_time", DateUtils.formatDate(new Date(),"yyyyMMddHHmmss"));//外部变更时间
+
+			ProRequest proRequest=new ProRequest();
+			proRequest.setMethod("ehc.ehealthcard.alterinfo");//接口名称
+			proRequest.setBiz_content(JSONObject.toJSONString(content));//请求参数集合
+			ProResponse proResponse=proCardService.process(proRequest);//发送请求
+			//请求失败
+			if(!"10".equals(proResponse.getCode())){  //10成功   00失败
+				throw new BusException(proResponse.getMessage());
+			}
+			//封装响应参数
+			JSONObject jsonObject = JSONObject.parseObject(proResponse.getBiz_content());
+			String mindexId=jsonObject.getString("mindex_id");
+			ret.setHealthCardId(healthCardId);
+			ret.setMindexId(mindexId);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new BusException("健康卡资料修改失败");
+		}
+		return ret;
+	}
+
+}

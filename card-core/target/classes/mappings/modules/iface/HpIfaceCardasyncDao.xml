@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.iface.dao.HpIfaceCardasyncDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpIfaceCardasyncColumns">
+		a.pkid AS "pkid",
+		a.appid as "appid",
+		a.password as "password",
+		a.idtype AS "iDType",
+		a.idcardnum AS "iDCardNum",
+		a.name AS "name",
+		a.phone AS "phone",
+		a.healthecardnum AS "healthECardNum",
+		a.cardtype AS "cardType",
+		a.cardnum AS "cardNum",
+		a.gender AS "gender",
+		a.dateorbirth AS "dateOfBirth",
+		a.extid AS "extid",
+		a.url AS "url",
+		a.errcount AS "errCount",
+		a.lastedate AS "lastedate",
+		a.errcode AS "errCode",
+		a.errmsg AS "errmsg",
+		a.date0 AS "date0",
+		a.date1 AS "date1"
+	</sql>
+
+	<sql id="table_sequence">
+	  SEQ_HP_IFACE_CARDASYNC.nextval
+	</sql>
+	<sql id="hpIfaceCardasyncJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="com.healthpay.modules.iface.entity.HpIfaceCardasync" >
+		SELECT 
+			<include refid="hpIfaceCardasyncColumns"/>
+		FROM hp_iface_cardasync a
+		<include refid="hpIfaceCardasyncJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.iface.entity.HpIfaceCardasync" >
+		SELECT 
+			<include refid="hpIfaceCardasyncColumns"/>
+		FROM hp_iface_cardasync a
+		<include refid="hpIfaceCardasyncJoins"/>
+		<where>
+			
+			<if test="iDCardNum != null and iDCardNum != ''">
+				AND a.idcardnum = #{iDCardNum}
+			</if>
+			<if test="name != null and name != ''">
+				AND a.name like '%'||#{name}||'%'
+			</if>
+			<if test="phone != null and phone != ''">
+				AND a.phone = #{phone}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.iface.entity.HpIfaceCardasync" >
+		SELECT 
+			<include refid="hpIfaceCardasyncColumns"/>
+		FROM hp_iface_cardasync a
+		<include refid="hpIfaceCardasyncJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_iface_cardasync(
+			pkid,
+		    appid,
+		    password,
+			idtype,
+			idcardnum,
+			name,
+			phone,
+			healthecardnum,
+			cardtype,
+			cardnum,
+			gender,
+			dateorbirth,
+			extid,
+			url,
+			errcount,
+			lastedate,
+			errcode,
+			errmsg,
+			date0,
+			date1
+		) VALUES (
+		    sys_guid(),
+		    #{appid},
+		    #{password},
+			#{iDType},
+			#{iDCardNum},
+			#{name},
+			#{phone},
+			#{healthECardNum},
+			#{cardType},
+			#{cardNum},
+			#{gender},
+			#{dateOfBirth},
+			#{extid},
+			#{url},
+			#{errCount},
+			#{lastedate},
+			#{errCode},
+			#{errmsg},
+			#{date0},
+			#{date1}
+		)
+	</insert>
+	<insert id="insertBak">
+		INSERT INTO HP_IFACE_CARDASYNC_BAK(
+		pkid,
+		appid,
+		password,
+		idtype,
+		idcardnum,
+		name,
+		phone,
+		healthecardnum,
+		cardtype,
+		cardnum,
+		gender,
+		dateorbirth,
+		extid,
+		url,
+		date0,
+		date1
+		) VALUES (
+		SEQ_HP_IFACE_CARDASYNC_BAK.nextval,
+		#{appid},
+		#{password},
+		#{iDType},
+		#{iDCardNum},
+		#{name},
+		#{phone},
+		#{healthECardNum},
+		#{cardType},
+		#{cardNum},
+		#{gender},
+		#{dateOfBirth},
+		#{extid},
+		#{url},
+		#{date0},
+		#{date1}
+		)
+	</insert>
+
+	<update id="update">
+		UPDATE hp_iface_cardasync SET
+			appid = #{appid},
+			password = #{password},
+			idtype = #{iDType},
+			idcardnum = #{iDCardNum},
+			name = #{name},
+			phone = #{phone},
+			healthecardnum = #{healthECardNum},
+			cardtype = #{cardType},
+			cardnum = #{cardNum},
+			gender = #{gender},
+			dateorbirth = #{dateOfBirth},
+			extid = #{extid},
+			url = #{url},
+			errcount = #{errCount},
+			lastedate = #{lastedate},
+			errcode = #{errCode},
+			errmsg = #{errmsg},
+			date0 = #{date0},
+			date1 = #{date1}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_iface_cardasync
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_iface_cardasync SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	<update id="updateHpIfaceCardasync">
+		UPDATE HP_IFACE_CARDASYNC SET ERRCOUNT = nvl(ERRCOUNT,0) + 1,LASTEDATE=sysdate,ERRMSG=#{errmsg},ERRCODE=#{errcode}
+		WHERE pkid = #{pkid}
+	</update>
+
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.iface.entity.HpIfaceCardasync" statementType="STATEMENT">
+		select * FROM hp_iface_cardasync  where ${propertyName} = '${value}'
+	</select>
+	<select id="findCardasyncList" resultType="com.healthpay.modules.iface.entity.HpIfaceCardasync">
+		SELECT <include refid="hpIfaceCardasyncColumns"/> FROM HP_IFACE_CARDASYNC a  WHERE <![CDATA[nvl(ERRCOUNT,0) < 10 ]]>
+	</select>
+
+</mapper>

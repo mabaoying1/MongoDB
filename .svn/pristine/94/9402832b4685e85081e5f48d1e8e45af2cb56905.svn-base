@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.iface.dao.HpIfaceMerchantDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpIfaceMerchantColumns">
+		a.mer_id AS "merId",
+		a.mer_name AS "merName",
+		a.mer_ename AS "merEname",
+		a.mer_abbr_name AS "merAbbrName",
+		a.mer_abbr_ename AS "merAbbrEname",
+		a.status AS "status",
+		a.mer_type AS "merType",
+		a.digitalkey as "digitalKey",
+		a.privatekey as "privateKey",
+		a.publickey as "publicKey",
+		a.source as "source",
+		a.isautoaudit as "isAutoAudit",
+		a.flag02 AS "flag02",
+		a.flag01 AS "flag01",
+		a.flag00 AS "flag00",
+		a.str02 AS "str02",
+		a.str01 AS "str01",
+		a.str00 AS "str00",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.remark AS "remark"
+	</sql>
+	
+	<sql id="hpIfaceMerchantJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="com.healthpay.modules.iface.entity.HpIfaceMerchant" >
+		SELECT 
+			<include refid="hpIfaceMerchantColumns"/>
+		FROM hp_iface_merchant a
+		<include refid="hpIfaceMerchantJoins"/>
+		WHERE a.mer_id = #{merId}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.iface.entity.HpIfaceMerchant" >
+		SELECT 
+			<include refid="hpIfaceMerchantColumns"/>
+		FROM hp_iface_merchant a
+		<include refid="hpIfaceMerchantJoins"/>
+		<where>
+			
+			<if test="merName != null and merName != ''">
+				AND a.mer_name = #{merName}
+			</if>
+			<if test="merEname != null and merEname != ''">
+				AND a.mer_ename = #{merEname}
+			</if>
+			<if test="merAbbrName != null and merAbbrName != ''">
+				AND a.mer_abbr_name = #{merAbbrName}
+			</if>
+			<if test="merAbbrEname != null and merAbbrEname != ''">
+				AND a.mer_abbr_ename = #{merAbbrEname}
+			</if>
+			<if test="source != null and source != ''">
+				AND a.source = #{source}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.iface.entity.HpIfaceMerchant" >
+		SELECT 
+			<include refid="hpIfaceMerchantColumns"/>
+		FROM hp_iface_merchant a
+		<include refid="hpIfaceMerchantJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_iface_merchant(
+			mer_id,
+			mer_name,
+			mer_ename,
+			mer_abbr_name,
+			mer_abbr_ename,
+			status,
+			mer_type,
+			digitalkey,
+			privatekey,
+			publickey,
+			source,
+			isautoaudit,
+			flag02,
+			flag01,
+			flag00,
+			str02,
+			str01,
+			str00,
+			create_date,
+			create_by,
+			update_date,
+			update_by,
+			remark
+		) VALUES (
+			#{merId},
+			#{merName},
+			#{merEname},
+			#{merAbbrName},
+			#{merAbbrEname},
+			#{status},
+			#{merType},
+			#{digitalKey},
+			#{privateKey},
+			#{publicKey},
+			#{source},
+			#{isAutoAudit},
+			#{flag02},
+			#{flag01},
+			#{flag00},
+			#{str02},
+			#{str01},
+			#{str00},
+			#{createDate},
+			#{createBy.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{remark}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_iface_merchant SET
+			mer_name = #{merName},
+			mer_ename = #{merEname},
+			mer_abbr_name = #{merAbbrName},
+			mer_abbr_ename = #{merAbbrEname},
+			status = #{status},
+			mer_type = #{merType},
+			digitalkey = #{digitalKey},
+			privatekey = #{privateKey},
+			publickey = #{publicKey},
+			source = #{source},
+			isautoaudit = #{isAutoAudit},
+			flag02 = #{flag02},
+			flag01 = #{flag01},
+			flag00 = #{flag00},
+			str02 = #{str02},
+			str01 = #{str01},
+			str00 = #{str00},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			remark = #{remark}
+		WHERE mer_id = #{merId}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_iface_merchant
+		WHERE mer_id = #{merId}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_iface_merchant SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE mer_id = #{merId}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.iface.entity.HpIfaceMerchant" statementType="STATEMENT">
+		select * FROM hp_iface_merchant  where ${propertyName} = '${value}'
+	</select>
+
+	<select id="getGateway" resultType="com.healthpay.modules.iface.entity.HpIfaceMerchant" >
+		SELECT
+		<include refid="hpIfaceMerchantColumns"/>
+		FROM hp_iface_merchant a
+		<include refid="hpIfaceMerchantJoins"/>
+		WHERE a.mer_name = #{0} and a.source = #{1}
+	</select>
+</mapper>

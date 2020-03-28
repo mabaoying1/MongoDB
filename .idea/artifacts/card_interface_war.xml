@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="card-interface:war">
+    <output-path>$PROJECT_DIR$/card-interface/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>card-interface</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="card-interface.war">
+      <element id="artifact" artifact-name="card-interface:war exploded" />
+    </root>
+  </artifact>
+</component>

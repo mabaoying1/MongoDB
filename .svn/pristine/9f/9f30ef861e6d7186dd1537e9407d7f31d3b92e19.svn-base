@@ -1,0 +1,74 @@
+package com.healthpay.iface.scheduler;
+
+import com.alibaba.fastjson.JSONObject;
+import com.healthpay.common.entity.ProRequest;
+import com.healthpay.common.service.proCard.IPCardService;
+import com.healthpay.common.service.proCard.impl.ProCardServiceImpl;
+import com.healthpay.modules.hc.service.HpYkjlXnkService;
+import org.apache.shiro.util.CollectionUtils;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.quartz.QuartzJobBean;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+/**
+ * @author mabaoying
+ * @ClassName: HpYkjlXnkJob
+ * @Description: 电子健康用卡监测数据上传
+ * @date: 2019/7/31
+ * @最后修改人:
+ * @最后修改时间:
+ */
+public class HpYkjlXnkJob extends QuartzJobBean {
+
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private HpYkjlXnkService hpYkjlXnkService;
+
+    @Autowired
+    private IPCardService proCardService;
+
+    private static boolean isRun = false;
+
+    @Override
+    protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+        if (isRun) {
+            logger.info("健康卡用卡记录上传服务正在执行.....");
+            return;
+        }
+        isRun = true;
+
+        try{
+            logger.info("健康卡用卡记录开始上传.......");
+            //每次只能上传同一天的数据
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date d = new Date();
+            String date = sdf.format(d);
+            List<Map<String,Object>> ykjlXnkList=hpYkjlXnkService.getHpYkjlXnlByTime(date);
+
+            if(CollectionUtils.isEmpty(ykjlXnkList)){
+                logger.info("未查询到用卡记录......");
+            }else{
+                //上传省卡管
+                logger.info("上传省卡管中.....");
+                ProRequest proRequest=new ProRequest();
+                proRequest.setMethod("ehc.ehealthcode.usecarddate");//接口名称
+                proRequest.setBiz_content(JSONObject.toJSONString(ykjlXnkList));//请求参数集合
+                proCardService.process(proRequest);//发送请求
+                //更新上传时间
+                logger.info("更新上传时间");
+                hpYkjlXnkService.updateHpYkjlXnlList(ykjlXnkList,d);
+            }
+        }catch (Exception e){
+            logger.error("健康卡用卡记录上传异常:"+e.getMessage());
+        } finally {
+            isRun = false;
+        }
+        logger.info("健康卡用卡记录上传结束.....");
+    }
+}

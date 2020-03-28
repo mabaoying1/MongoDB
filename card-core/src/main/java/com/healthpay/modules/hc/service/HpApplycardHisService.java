@@ -1,0 +1,56 @@
+package com.healthpay.modules.hc.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.healthpay.common.persistence.Page;
+import com.healthpay.common.service.CrudService;
+import com.healthpay.modules.hc.dao.HpApplycardHisDao;
+import com.healthpay.modules.hc.entity.HpApplycardHis;
+
+/**
+ * 健康卡历史记录Service
+ * 
+ * @author yyl
+ * @version 2016-05-25
+ */
+@Service
+@Transactional(readOnly = true)
+public class HpApplycardHisService extends CrudService<HpApplycardHisDao, HpApplycardHis> {
+	@Autowired
+	private HpApplycardHisDao hpApplycardHisDao;
+
+	public HpApplycardHis get(String id) {
+		return super.get(id);
+	}
+
+	public List<HpApplycardHis> findList(HpApplycardHis hpApplycardHis) {
+		return super.findList(hpApplycardHis);
+	}
+
+	public Page<HpApplycardHis> findPage(Page<HpApplycardHis> page, HpApplycardHis hpApplycardHis) {
+		hpApplycardHis.getSqlMap().put("dsf", dataScopeFilter(hpApplycardHis.getCurrentUser(), "o2", "u"));
+		hpApplycardHis.setPage(page);
+		page.setOrderBy("createDate");
+		page.setList(hpApplycardHisDao.findList(hpApplycardHis));
+		return super.findPage(page, hpApplycardHis);
+	}
+
+	@Transactional(readOnly = false)
+	public void save(HpApplycardHis hpApplycardHis) {
+		super.save(hpApplycardHis);
+	}
+
+	@Transactional(readOnly = false)
+	public void delete(HpApplycardHis hpApplycardHis) {
+		super.delete(hpApplycardHis);
+	}
+	
+	public void saveHpApplycardHis(HpApplycardHis his) {
+		hpApplycardHisDao.insert(his);
+	}
+
+}

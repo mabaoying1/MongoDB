@@ -1,0 +1,371 @@
+package com.healthpay.modules.hc.service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.alibaba.fastjson.JSONObject;
+import com.healthpay.common.entity.ProRequest;
+import com.healthpay.common.entity.ProResponse;
+import com.healthpay.common.service.proCard.IPCardService;
+import com.healthpay.common.utils.*;
+import com.healthpay.modules.sys.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.healthpay.common.Constant;
+import com.healthpay.common.exception.BusException;
+import com.healthpay.common.persistence.Page;
+import com.healthpay.common.service.CrudService;
+import com.healthpay.modules.hc.dao.HpApplycardDao;
+import com.healthpay.modules.hc.entity.HpApplycard;
+import com.healthpay.modules.hc.entity.HpApplycardHis;
+import com.healthpay.modules.hc.entity.HpCardholder;
+import com.healthpay.modules.hc.entity.HpHealthcard;
+import com.healthpay.modules.hc.entity.HpRealCard;
+import com.healthpay.modules.iface.entity.HpIfaceCardasync;
+import com.healthpay.modules.iface.entity.HpIfacePlatform;
+import com.healthpay.modules.iface.service.HpIfaceCardasyncService;
+import com.healthpay.modules.iface.service.HpIfacePlatformService;
+import com.healthpay.modules.iface.service.HpIfacePlatformareaService;
+
+/**
+ * 健康卡申请记录Service
+ *
+ * @author yyl
+ * @version 2016-05-25
+ */
+@Service
+@Transactional(readOnly = true)
+public class HpApplycardService extends CrudService<HpApplycardDao, HpApplycard> {
+	@Autowired
+	private HpHealthcardService hpHealthcardService;
+	@Autowired
+	private HpCardholderService hpCardholderService;
+	@Autowired
+	private HpApplycardHisService hpApplycardHisService;
+	@Autowired
+	private HpApplycardDao hpApplycardDao;
+	@Autowired
+	private HpIfacePlatformareaService hpIfacePlatformareaService;
+	@Autowired
+	private HpIfacePlatformService hpIfacePlatformService;
+	@Autowired
+	private HpIfaceCardasyncService hpIfaceCardasyncService;
+
+	@Autowired
+	private IPCardService proCardService;
+	/**
+	 * Method description
+	 *
+	 *健康卡申请审核
+	 * @param hpApplycard
+	 * @param operate
+	 *
+	 * @throws Exception
+	 */
+	public String audit(HpApplycard hpApplycard, String operate, boolean syncflag) throws Exception {
+
+		HpHealthcard hpHealthcard = null;
+		try {
+			HpApplycardHis his = new HpApplycardHis();//健康卡申请历史
+			HpCardholder hpCardholder = new HpCardholder();//持卡人档案
+			hpHealthcard = new HpHealthcard();//电子健康卡数据
+
+			// 持卡人信息 申请卡信息属性不为null值复制到持卡人信息属性中
+			MyBeanUtils.copyBeanNotNull2Bean(hpApplycard, hpCardholder);
+			hpCardholder.setArea2(hpApplycard.getArea1());
+
+			// 卡数据信息 申请卡信息属性不为null值复制到健康卡信息属性中
+			MyBeanUtils.copyBeanNotNull2Bean(hpApplycard, hpHealthcard);
+			hpHealthcard.setArea2(hpApplycard.getArea1());
+			hpHealthcard.setStatus("2");// 状态 0 - 申请 1- 待激活 2 - 生效( 审核通过) 3 - 注销  // 4 - 挂失
+			hpHealthcard.setSecurityCode(123); // 安全码
+			hpHealthcard.setChipSerialid("123"); // 芯片序列号
+			hpHealthcard.setStartDate(new Date());
+			hpHealthcard.setIsOpenpay(0L);
+
+			// 健康卡历史数据
+			MyBeanUtils.copyBeanNotNull2Bean(hpCardholder, his);
+			MyBeanUtils.copyBeanNotNull2Bean(hpHealthcard, his);
+			if (null != hpApplycard.getOffice()) {
+				his.setOrganizationCode(Long.valueOf(hpApplycard.getOffice().getId()));
+				his.setOrganizationName(hpApplycard.getOffice().getName());
+			}
+
+			hpCardholder.setStatus(1L);// 0 - 已销户 1 - 正常 2 - 已拉黑
+			if (Constant.OPERATE_AUDIT.equals(operate)) {// operate==1时是审核通过
+				//向省卡管注册电子健康卡
+				Map<String,Object> content=new HashMap<>();
+				content.put("register_no",RandomUtils.getAlterNo());//外部注册流水号
+				content.put("register_time",DateUtils.formatDate(new Date(),"yyyyMMddHHmmss"));//外部注册时间
+				content.put("apply_type",hpApplycard.getStr01());//申请方式
+				content.put("id_type",hpApplycard.getDocuType());//证件类型
+				content.put("id_no",hpApplycard.getDocuId());//证件号
+				content.put("name", hpApplycard.getName());//用户姓名
+				content.put("gender",hpApplycard.getSex());//用户性别
+				content.put("nation",hpApplycard.getNation());//民族
+				content.put("nationality",hpApplycard.getNationality());//用户国籍
+				content.put("domicile",hpApplycard.getAddress());//用户户籍地址
+				content.put("birthday",DateUtils.formatDate(hpApplycard.getBirth(),"yyyy-MM-dd"));//出生日期
+				content.put("cellphone",hpApplycard.getPhone());//手机号码
+				content.put("telephone",hpApplycard.getTel());//联系电话
+				content.put("address",hpApplycard.getAddress2());//居住地址
+				content.put("workcode",hpApplycard.getProfession());//职业代码
+				content.put("maritalstatus",hpApplycard.getMaritalStatus());//婚姻状态代码
+				content.put("rzfs",hpApplycard.getStr02());//认证模式
+				content.put("file1",null);//认证资料  暂时不传
+
+				ProRequest proRequest=new ProRequest();
+				proRequest.setMethod("ehc.ehealthcard.register");//接口名称
+				proRequest.setBiz_content(JSONObject.toJSONString(content));//请求参数集合
+				ProResponse proResponse=proCardService.process(proRequest);//发送请求
+				//请求失败
+				if(!"10".equals(proResponse.getCode())){  //10成功   00失败
+					throw new BusException(proResponse.getMessage());
+				}
+
+				JSONObject jsonObject=JSONObject.parseObject(proResponse.getBiz_content());
+				String ehealthCardId=jsonObject.getString("ehealth_card_id");//获取电子健康卡ID
+				String mindexId=jsonObject.getString("mindex_id");//居民健康卡主索引ID
+				hpHealthcard.setPkid(ehealthCardId);
+				hpHealthcard.setCardId(mindexId);// 卡号（居民健康卡主索引ID）
+				hpHealthcard.setIsNewRecord(true);
+				hpCardholder.setIsNewRecord(true);
+
+				//如果存在健康卡则更新操作，已注销的健康卡
+				HpHealthcard hpHealthcard2 = hpHealthcardService.getByIdentityId(hpApplycard.getIdentityId());
+				if ( null != hpHealthcard) {
+					User updateBy = new User();
+					updateBy.setId("1");//默认系统管理员
+					hpCardholder.setUpdateBy(updateBy);
+					hpCardholder.setUpdateDate(DbUtil.getDate());
+					//更新持卡人档案信息
+					hpCardholderService.update(hpCardholder);
+
+					hpHealthcard.setUpdateBy(updateBy);
+					hpHealthcard.setUpdateDate(DbUtil.getDate());
+					//更新电子健康卡记录
+					hpHealthcardService.update(hpHealthcard);
+				}else{
+					//保存持卡人档案信息
+					hpCardholderService.save(hpCardholder);
+					//保存电子健康卡记录
+					hpHealthcardService.save(hpHealthcard);
+				}
+			}
+
+			//删除健康卡申请记录
+			dao.delete(hpApplycard);
+			//审核通过
+			if (Constant.OPERATE_AUDIT.equals(operate)) {
+				his.setStatus(2L);// 1 待审核 2 - 审核通过 3 - 审核不通过
+			} else {
+				his.setStatus(3L);
+			}
+			//保存健康卡申请历史记录
+			hpApplycardHisService.save(his);
+
+			// 判斷接口商戶號時候為空，如果不為空，要推送审核结果反馈
+			// 先不通知
+			// if (StringUtils.isNotEmpty(hpApplycard.getStr00()) &&
+			// Constant.OPERATE_AUDIT.equals(operate)) {
+			// HpIfaceAddress hpIfaceAddress =
+			// hpIfaceAddressDao.getIfaceAddressByMerid(hpApplycard.getStr00(),"A2001");
+			// if(null != hpIfaceAddress &&
+			// StringUtils.isNotEmpty(hpIfaceAddress.getFuncAddress())){
+			// HpIfaceMsgqueue hpIfaceMsgqueue = new HpIfaceMsgqueue();
+			// hpIfaceMsgqueue.setMerId(hpApplycard.getStr00());
+			// hpIfaceMsgqueue.setNationality(hpCardholder.getNationality());
+			// hpIfaceMsgqueue.setDocutype(hpCardholder.getDocuType());
+			// hpIfaceMsgqueue.setDocuid(hpCardholder.getDocuId());
+			// hpIfaceMsgqueue.setHealthcardid(hpHealthcard.getPkid());
+			// hpIfaceMsgqueue.setFuncid(hpIfaceAddress.getFuncId());
+			// hpIfaceMsgqueue.setPosturl(hpIfaceAddress.getFuncAddress());
+			// hpIfaceMsgqueue.setIsNewRecord(true);
+			// hpIfaceMsgqueue.setCreatetime(DbUtil.getDate());
+			// hpIfaceMsgqueue.setErrcount(0);
+			// hpIfaceMsgqueueService.save(hpIfaceMsgqueue);
+			// }
+			// }
+
+			// 审核通过后把卡号同步给区域平台
+			if (syncflag)
+				doSendAreaPlatform(hpCardholder, hpHealthcard.getPkid(), null);
+		} catch (Exception e) {
+			logger.error("服务器错误", e);
+			if (e != null) {
+				throw e;
+			} else {
+				throw new BusException("服务器错误");
+			}
+		}
+		return hpHealthcard.getPkid();
+	}
+
+	public void doSendAreaPlatform(HpCardholder hpCardholder, String healthCardId, HpRealCard hpRealCard) {
+		String cityCode = hpCardholder.getCitycode2();
+		String countyCode = hpCardholder.getCountycode();
+		if (StringUtils.isEmpty(cityCode))
+			cityCode = "4420";
+
+		List<Long> idList = hpIfacePlatformareaService.getByCode(cityCode, countyCode);
+		if (null != idList && idList.size() > 0) {
+			for (Long id : idList) {
+				HpIfacePlatform hpIfacePlatform = hpIfacePlatformService.getFormCache(id);
+				if (null != hpIfacePlatform && StringUtils.isNotEmpty(hpIfacePlatform.getPosturl())) {
+					HpIfaceCardasync cardasync = new HpIfaceCardasync();
+					cardasync.setHealthECardNum(healthCardId);
+					cardasync.setName(hpCardholder.getName());
+					cardasync.setPhone(hpCardholder.getPhone());
+					cardasync.setDateOfBirth(hpCardholder.getBirth());
+					cardasync.setGender(hpCardholder.getSex());
+					cardasync.setIDCardNum(hpCardholder.getDocuId());
+					cardasync.setIDType(hpCardholder.getDocuType());
+					cardasync.setUrl(hpIfacePlatform.getPosturl());
+					cardasync.setAppid(hpIfacePlatform.getFuncCode());
+					cardasync.setPassword(hpIfacePlatform.getScretkey());
+					String cardType = "-";
+					String cardNum = "-";
+					if (null != hpRealCard) {
+						cardType = "03";
+						switch (hpRealCard.getType().intValue()) {
+						case 0:
+							cardType = "03";
+							break;
+						case 1:
+							cardType = "01";
+							break;
+						}
+						cardNum = hpRealCard.getIccardid();
+					}
+					cardasync.setCardType(cardType);
+					cardasync.setCardNum(cardNum);
+					hpIfaceCardasyncService.save(cardasync);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param hpApplycard
+	 */
+	@Transactional(readOnly = false)
+	public void delete(HpApplycard hpApplycard) {
+		super.delete(hpApplycard);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param hpApplycard
+	 *
+	 * @return
+	 */
+	public List<HpApplycard> findList(HpApplycard hpApplycard) {
+		return super.findList(hpApplycard);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param page
+	 * @param hpApplycard
+	 *
+	 * @return
+	 */
+	public Page<HpApplycard> findPage(Page<HpApplycard> page, HpApplycard hpApplycard) {
+		hpApplycard.getSqlMap().put("dsf", dataScopeFilter(hpApplycard.getCurrentUser(), "o2", "u"));
+		hpApplycard.setPage(page);
+		page.setList(hpApplycardDao.findList(hpApplycard));
+
+		return page;
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param hpApplycard
+	 */
+	@Transactional(readOnly = false)
+	public void save(HpApplycard hpApplycard) {
+		super.save(hpApplycard);
+	}
+
+	/**
+	 * 根据身份证获取健康卡信息
+	 *
+	 * @param identityId
+	 * @return
+	 * @author yyl
+	 * @date 2016年5月27日 下午2:59:51
+	 */
+	public HpApplycard getByIdentityId(String identityId) {
+		return this.dao.getByIdentityId(identityId);
+	}
+
+	/**
+	 * 根据国籍、证件类型、证件号码获取健康卡信息
+	 *
+	 * @param nationality
+	 * @param docuType
+	 * @param docuId
+	 * @return
+	 * @author yyl
+	 * @date 2016年5月27日 下午2:59:51
+	 */
+	public HpApplycard getByNationAndDocuTypeAndDocuId(String nationality, String docuType, String docuId) {
+		return this.dao.getByNationAndDocuTypeAndDocuId(nationality, docuType, docuId);
+	}
+
+	/**
+	 * 根据手机号获取健康卡信息
+	 *
+	 * @param phone
+	 * @return
+	 * @author yyl
+	 * @date 2016年5月27日 下午2:59:51
+	 */
+	public HpApplycard getByPhone(String phone) {
+		return this.dao.getByPhone(phone);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param id
+	 *
+	 * @return
+	 */
+	public HpApplycard get(String id) {
+		return super.get(id);
+	}
+
+	/**
+	 * Method description
+	 *
+	 *
+	 * @param entity
+	 *
+	 * @return
+	 */
+	public int getWaitAuditCount(HpApplycard entity) {
+
+		// 加上数据权限
+		// 生成数据权限过滤条件（dsf为dataScopeFilter的简写，在xml中使用 ${sqlMap.dsf}调用权限SQL）
+		entity.getSqlMap().put("dsf", dataScopeFilter(entity.getCurrentUser(), "o2", "u"));
+
+		return hpApplycardDao.getWaitAuditCount(entity);
+	}
+}
+
+// ~ Formatted by Jindent --- http://www.jindent.com

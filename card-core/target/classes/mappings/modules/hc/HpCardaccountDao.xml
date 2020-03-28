@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpCardaccountDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="table_sequence">seq_hp_cardaccount.nextval</sql>
+    
+	<sql id="hpCardaccountColumns">
+		a.pkid AS "pkid",
+		a.card_pkid AS "cardPkid",
+		a.card_id AS "cardId",
+		a.paysystem AS "paysystem",
+		a.name as "name",
+		a.account AS "account",
+		a.accountname AS "accountname",
+		a.mobile AS "mobile",
+		a.bankid AS "bankid",
+		a.bankname AS "bankname",
+		a.accounttype AS "accounttype",
+		a.backnum AS "backnum",
+		a.valid_date AS "validDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.create_by_name AS "createBy.name",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.update_by_name AS "updateBy.name"
+	</sql>
+	
+	<sql id="hpCardaccountJoins">
+		LEFT JOIN hp_healthcard t1 on t1.pkid = a.card_pkid
+		LEFT JOIN sys_area o on o.id = t1.area_id
+	</sql>
+	
+    
+	<select id="get" resultType="com.healthpay.modules.hc.entity.HpCardaccount" >
+		SELECT 
+			<include refid="hpCardaccountColumns"/>
+		FROM hp_cardaccount a
+		<include refid="hpCardaccountJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpCardaccount" >
+		SELECT 
+			<include refid="hpCardaccountColumns"/>
+		FROM hp_cardaccount a
+		<include refid="hpCardaccountJoins"/>
+		<where>
+			AND 1 = 1
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.hc.entity.HpCardaccount" >
+		SELECT 
+			<include refid="hpCardaccountColumns"/>
+		FROM hp_cardaccount a
+		<include refid="hpCardaccountJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		<selectKey keyProperty="pkid" resultType="String" order="BEFORE">
+	      select sys_guid() from dual
+	    </selectKey>
+		INSERT INTO hp_cardaccount(
+			pkid,
+			card_pkid,
+			card_id,
+			paysystem,
+			name,
+			account,
+			accountname,
+			mobile,
+			bankid,
+			bankname,
+			accounttype,
+			backnum,
+			valid_date,
+			create_date,
+			create_by,
+			create_by_name,
+			update_date,
+			update_by,
+			update_by_name,
+			flag00,
+			flag01,
+			flag02,
+			flag03,
+			flag04,
+			flag05,
+			str00,
+			str01,
+			str02,
+			str03,
+			str04,
+			str05
+		) VALUES (
+			#{pkid},
+			#{cardPkid},
+			#{cardId},
+			#{paysystem},
+		    #{name},
+			#{account},
+			#{accountname},
+			#{mobile},
+			#{bankid},
+			#{bankname},
+			#{accounttype},
+			#{backnum},
+			#{validDate},
+			#{createDate},
+			#{createBy.id},
+			#{createBy.name},
+			#{updateDate},
+			#{updateBy.id},
+			#{updateBy.name},
+			#{flag00},
+			#{flag01},
+			#{flag02},
+			#{flag03},
+			#{flag04},
+			#{flag05},
+			#{str00},
+			#{str01},
+			#{str02},
+			#{str03},
+			#{str04},
+			#{str05}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_cardaccount SET 	
+			pkid = #{pkid},
+			card_pkid = #{cardPkid},
+			card_id = #{cardId},
+			paysystem = #{paysystem},
+			name = #{name},
+			account = #{account},
+			accountname = #{accountname},
+			mobile = #{mobile},
+			bankid = #{bankid},
+			bankname = #{bankname},
+			accounttype = #{accounttype},
+			backnum = #{backnum},
+			valid_date = #{validDate},
+			create_by_name = #{createBy.name},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			update_by_name = #{updateBy.name},
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_cardaccount
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_cardaccount SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.hc.entity.HpCardaccount" statementType="STATEMENT">
+		select * FROM hp_cardaccount  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

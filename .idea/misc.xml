@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/card-interface" />
+    <file type="web" url="file://$PROJECT_DIR$/card-web" />
+  </component>
+  <component name="JavaScriptSettings">
+    <option name="languageLevel" value="ES6" />
+  </component>
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/card-interface/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_12" default="false" project-jdk-name="jdk1.8.0_66" project-jdk-type="JavaSDK" />
+  <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://122.224.131.237:11153/svn/xbjszx/%E9%A1%B9%E7%9B%AE/%E5%B9%B3%E5%8F%B0%E7%BB%84/branches" />
+                  <option value="https://122.224.131.237:11153/svn/xbjszx/%E9%A1%B9%E7%9B%AE/%E5%B9%B3%E5%8F%B0%E7%BB%84/tag" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://122.224.131.237:11153/svn/xbjszx/项目/平台组/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

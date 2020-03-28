@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpApplycardHisDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="table_sequence">seq_hp_applycard_his.nextval</sql>
+    
+	<sql id="hpApplycardHisColumns">
+		a.pkid AS "pkid",
+		a.identity_id AS "identityId",
+		a.nationality AS "nationality",
+		a.docu_type AS "docuType",
+		a.docu_id AS "docuId",
+		a.health_id AS "healthId",
+		a.new_farmid AS "newFarmid",
+		a.name AS "name",
+		a.birth AS "birth",
+		a.profession AS "profession",
+		a.address_type AS "addressType",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.marital_status AS "maritalStatus",
+		a.education_level AS "educationLevel",
+		a.countrycode AS "countrycode",
+		a.countryname AS "countryname",
+		a.provcode AS "provcode",
+		a.provname AS "provname",
+		a.citycode AS "citycode",
+		a.cityname AS "cityname",
+		a.countycode AS "countycode",
+		a.countyname AS "countyname",
+		a.towncode AS "towncode",
+		a.townname AS "townname",
+		a.villagecode AS "villagecode",
+		a.villagename AS "villagename",
+		a.address AS "address",
+		a.postcode AS "postcode",
+		a.countrycode2 AS "countrycode2",
+		a.countryname2 AS "countryname2",
+		a.provcode2 AS "provcode2",
+		a.provname2 AS "provname2",
+		a.citycode2 AS "citycode2",
+		a.cityname2 AS "cityname2",
+		a.countycode2 AS "countycode2",
+		a.countyname2 AS "countyname2",
+		a.towncode2 AS "towncode2",
+		a.townname2 AS "townname2",
+		a.villagecode2 AS "villagecode2",
+		a.villagename2 AS "villagename2",
+		a.address2 AS "address2",
+		a.paytype AS "paytype",
+		a.phone AS "phone",
+		a.tel AS "tel",
+		a.email AS "email",
+		a.attn_name AS "attnName",
+		a.attn_phone AS "attnPhone",
+		a.attn_rela AS "attnRela",
+		a.attn_name2 AS "attnName2",
+		a.attn_phone2 AS "attnPhone2",
+		a.attn_rela2 AS "attnRela2",
+		a.attn_name3 AS "attnName3",
+		a.attn_phone3 AS "attnPhone3",
+		a.attn_rela3 AS "attnRela3",
+		a.status AS "status",
+		a.source AS "source",
+		a.is_black AS "isBlack",
+		a.is_dead AS "isDead",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.create_by_name AS "createByName",
+		a.audit_date AS "auditDate",
+		a.audit_by AS "auditBy",
+		a.audit_by_name AS "auditByName",
+		a.card_id AS "cardId",
+		a.security_code AS "securityCode",
+		a.chip_serialid AS "chipSerialid",
+		a.card_type AS "cardType",
+		a.version AS "version",
+		a.organization_name AS "organizationName",
+		a.organization_code AS "organizationCode",
+		a.start_date AS "startDate",
+		a.valid_date AS "validDate",
+		a.is_openpay AS "isOpenpay",
+		a.paylimit AS "paylimit",
+		a.password AS "password",
+		a.is_pwdfree AS "isPwdfree",
+		a.smalllimit AS "smalllimit",
+		a.mobile AS "mobile",
+		a.reserved AS "reserved",
+		a.reason AS "reason",
+		a.paysystem AS "paysystem",
+		a.account AS "account",
+		a.accountname AS "accountname",
+		a.mobile2 AS "mobile2",
+		a.bankid AS "bankid",
+		a.bankname AS "bankname",
+		a.accounttype AS "accounttype",
+		a.backnum AS "backnum",
+		a.valid_date2 AS "validDate2",
+		a.flag00 AS "flag00",
+		a.url0 AS "url0",
+		a.url1 AS "url1",
+		a.str00 AS "str00",
+		a.remark AS "remark",
+		a.area_id AS "area.id",
+		a.area_id1 AS "area1.id",
+		a.area_id2 AS "area2.id",
+		a.office_id AS "office.id",
+		a.refuse_reason_type AS "refuse"
+	</sql>
+	
+	<sql id="hpApplycardHisJoins">
+        LEFT JOIN sys_area o on o.id = a.area_id
+		LEFT JOIN sys_area o1 on o1.id = a.area_id1
+		LEFT JOIN sys_area o2 on o2.id = a.area_id2
+		LEFT JOIN sys_office c ON c.id = a.office_id
+		LEFT JOIN sys_user u on u.id = a.create_by
+	</sql>
+	
+    
+	<select id="get" resultType="com.healthpay.modules.hc.entity.HpApplycardHis" >
+		SELECT 
+			<include refid="hpApplycardHisColumns"/>
+		FROM hp_applycard_his a
+		<include refid="hpApplycardHisJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpApplycardHis" >
+		SELECT 
+			<include refid="hpApplycardHisColumns"/>
+		FROM hp_applycard_his a
+		<include refid="hpApplycardHisJoins"/>
+		<where>
+			<if test="name != null and name != ''">
+				AND a.name LIKE 
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="identityId != null and identityId != ''">
+				AND a.identity_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{identityId}||'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{identityId},'%')</if>
+			</if>
+			<if test="office != null and office.id != null and office.id != ''">
+				AND (o1.id = #{office.id} OR o1.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+			</if>
+			<if test="area1 != null and area1.id != null and area1.id != ''">
+				AND (o.id = #{area1.id} OR o.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{area1.id}||',%')</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{area1.id}, ',%'))</if>
+			</if>
+            <!-- 数据范围过滤 -->
+            ${sqlMap.dsf}
+		</where>
+		ORDER BY a.create_date desc
+		<!-- <choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose> -->
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.hc.entity.HpApplycardHis" >
+		SELECT 
+			<include refid="hpApplycardHisColumns"/>
+		FROM hp_applycard_his a
+		<include refid="hpApplycardHisJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy} desc
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_applycard_his(
+			pkid,
+			identity_id,
+			nationality,
+			docu_type,
+			docu_id,
+			health_id,
+			new_farmid,
+			name,
+			birth,
+			profession,
+			address_type,
+			sex,
+			nation,
+			marital_status,
+			education_level,
+			countrycode,
+			countryname,
+			provcode,
+			provname,
+			citycode,
+			cityname,
+			countycode,
+			countyname,
+			towncode,
+			townname,
+			villagecode,
+			villagename,
+			address,
+			postcode,
+			countrycode2,
+			countryname2,
+			provcode2,
+			provname2,
+			citycode2,
+			cityname2,
+			countycode2,
+			countyname2,
+			towncode2,
+			townname2,
+			villagecode2,
+			villagename2,
+			address2,
+			paytype,
+			phone,
+			tel,
+			email,
+			attn_name,
+			attn_phone,
+			attn_rela,
+			attn_name2,
+			attn_phone2,
+			attn_rela2,
+			attn_name3,
+			attn_phone3,
+			attn_rela3,
+			status,
+			source,
+			is_black,
+			is_dead,
+			create_date,
+			create_by,
+			create_by_name,
+			audit_date,
+			audit_by,
+			audit_by_name,
+			card_id,
+			security_code,
+			chip_serialid,
+			card_type,
+			version,
+			organization_name,
+			organization_code,
+			start_date,
+			valid_date,
+			is_openpay,
+			paylimit,
+			password,
+			is_pwdfree,
+			smalllimit,
+			mobile,
+			reserved,
+			reason,
+			paysystem,
+			account,
+			accountname,
+			mobile2,
+			bankid,
+			bankname,
+			accounttype,
+			backnum,
+			valid_date2,
+			flag00,
+			url0,
+			url1,
+			str00,
+			remark,
+			area_id,
+			area_id1,
+			area_id2,
+			office_id,
+			refuse_reason_type
+		) VALUES (
+			sys_guid(),
+			#{identityId},
+			#{nationality},
+			#{docuType},
+			#{docuId},
+			#{healthId},
+			#{newFarmid},
+			#{name},
+			#{birth},
+			#{profession},
+			#{addressType},
+			#{sex},
+			#{nation},
+			#{maritalStatus},
+			#{educationLevel},
+			#{countrycode},
+			#{countryname},
+			#{provcode},
+			#{provname},
+			#{citycode},
+			#{cityname},
+			#{countycode},
+			#{countyname},
+			#{towncode},
+			#{townname},
+			#{villagecode},
+			#{villagename},
+			#{address},
+			#{postcode},
+			#{countrycode2},
+			#{countryname2},
+			#{provcode2},
+			#{provname2},
+			#{citycode2},
+			#{cityname2},
+			#{countycode2},
+			#{countyname2},
+			#{towncode2},
+			#{townname2},
+			#{villagecode2},
+			#{villagename2},
+			#{address2},
+			#{paytype},
+			#{phone},
+			#{tel},
+			#{email},
+			#{attnName},
+			#{attnPhone},
+			#{attnRela},
+			#{attnName2},
+			#{attnPhone2},
+			#{attnRela2},
+			#{attnName3},
+			#{attnPhone3},
+			#{attnRela3},
+			#{status},
+			#{source},
+			#{isBlack},
+			#{isDead},
+			#{createDate},
+			#{createBy.id},
+			#{createBy.name},
+			#{auditDate},
+			#{auditBy},
+			#{auditByName},
+			#{cardId},
+			#{securityCode},
+			#{chipSerialid},
+			#{cardType},
+			#{version},
+			#{organizationName},
+			#{organizationCode},
+			#{startDate},
+			#{validDate},
+			#{isOpenpay},
+			#{paylimit},
+			#{password},
+			#{isPwdfree},
+			#{smalllimit},
+			#{mobile},
+			#{reserved},
+			#{reason},
+			#{paysystem},
+			#{account},
+			#{accountname},
+			#{mobile2},
+			#{bankid},
+			#{bankname},
+			#{accounttype},
+			#{backnum},
+			#{validDate2},
+			#{flag00},
+			#{url0},
+			#{url1},
+			#{str00},
+			#{remark},
+			#{area.id},
+			#{area1.id},
+			#{area2.id},
+			#{office.id},
+			#{refuse}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_applycard_his SET 	
+			pkid = #{pkid},
+			identity_id = #{identityId},
+			nationality = #{nationality},
+			docu_type = #{docuType},
+			docu_id = #{docuId},
+			health_id = #{healthId},
+			new_farmid = #{newFarmid},
+			name = #{name},
+			birth = #{birth},
+			profession = #{profession},
+			address_type = #{addressType},
+			sex = #{sex},
+			nation = #{nation},
+			marital_status = #{maritalStatus},
+			education_level = #{educationLevel},
+			countrycode = #{countrycode},
+			countryname = #{countryname},
+			provcode = #{provcode},
+			provname = #{provname},
+			citycode = #{citycode},
+			cityname = #{cityname},
+			countycode = #{countycode},
+			countyname = #{countyname},
+			towncode = #{towncode},
+			townname = #{townname},
+			villagecode = #{villagecode},
+			villagename = #{villagename},
+			address = #{address},
+			postcode = #{postcode},
+			countrycode2 = #{countrycode2},
+			countryname2 = #{countryname2},
+			provcode2 = #{provcode2},
+			provname2 = #{provname2},
+			citycode2 = #{citycode2},
+			cityname2 = #{cityname2},
+			countycode2 = #{countycode2},
+			countyname2 = #{countyname2},
+			towncode2 = #{towncode2},
+			townname2 = #{townname2},
+			villagecode2 = #{villagecode2},
+			villagename2 = #{villagename2},
+			address2 = #{address2},
+			paytype = #{paytype},
+			phone = #{phone},
+			tel = #{tel},
+			email = #{email},
+			attn_name = #{attnName},
+			attn_phone = #{attnPhone},
+			attn_rela = #{attnRela},
+			attn_name2 = #{attnName2},
+			attn_phone2 = #{attnPhone2},
+			attn_rela2 = #{attnRela2},
+			attn_name3 = #{attnName3},
+			attn_phone3 = #{attnPhone3},
+			attn_rela3 = #{attnRela3},
+			status = #{status},
+			source = #{source},
+			is_black = #{isBlack},
+			is_dead = #{isDead},
+			create_by_name = #{createByName.id},
+			audit_date = #{auditDate},
+			audit_by = #{auditBy},
+			audit_by_name = #{auditByName},
+			card_id = #{cardId},
+			security_code = #{securityCode},
+			chip_serialid = #{chipSerialid},
+			card_type = #{cardType},
+			version = #{version},
+			organization_name = #{organizationName},
+			organization_code = #{organizationCode},
+			start_date = #{startDate},
+			valid_date = #{validDate},
+			is_openpay = #{isOpenpay},
+			paylimit = #{paylimit},
+			password = #{password},
+			is_pwdfree = #{isPwdfree},
+			smalllimit = #{smalllimit},
+			mobile = #{mobile},
+			reserved = #{reserved},
+			reason = #{reason},
+			paysystem = #{paysystem},
+			account = #{account},
+			accountname = #{accountname},
+			mobile2 = #{mobile2},
+			bankid = #{bankid},
+			bankname = #{bankname},
+			accounttype = #{accounttype},
+			backnum = #{backnum},
+			valid_date2 = #{validDate2},
+			flag00 = #{flag00},
+			flag01 = #{flag01},
+			flag02 = #{flag02},
+			flag03 = #{flag03},
+			flag04 = #{flag04},
+			flag05 = #{flag05},
+			url0 = #{url0},
+			url1 = #{url1},
+			url2 = #{url2},
+			url3 = #{url3},
+			url4 = #{url4},
+			url5 = #{url5},
+			url6 = #{url6},
+			url7 = #{url7},
+			url8 = #{url8},
+			str00 = #{str00},
+			str01 = #{str01},
+			str02 = #{str02},
+			str03 = #{str03},
+			str04 = #{str04},
+			str05 = #{str05},
+			remark = #{remark},
+			area_id = #{area.id},
+			area_id1 = #{area1.id},
+			area_id2 = #{area2.id},
+			office_id = #{office.id},
+			refuse_reason_type = #{refuse}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_applycard_his
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_applycard_his SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.hc.entity.HpApplycardHis" statementType="STATEMENT">
+		select * FROM hp_applycard_his  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

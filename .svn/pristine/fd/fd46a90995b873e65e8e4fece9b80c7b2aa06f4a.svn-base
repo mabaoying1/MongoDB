@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.iface.dao.HpIfaceLogDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpIfaceLogColumns">
+		a.pkid AS "pkid",
+		a.mer_id AS "merId",
+		a.func_id AS "funcId",
+		a.create_time AS "createTime",
+		a.senddata AS "senddata",
+		a.errmsg AS "errmsg",
+		a.retcode AS "retcode",
+		a.retdata AS "retdata",
+		a.ref0 AS "ref0",
+		a.ref1 AS "ref1",
+		a.ref2 AS "ref2",
+		a.flag0 AS "flag0",
+		a.flag1 AS "flag1",
+		a.flag2 AS "flag2"
+	</sql>
+
+	<sql id="table_sequence">SEQ_HP_IFACE_LOG.nextval</sql>
+
+	<sql id="hpIfaceLogJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="com.healthpay.modules.iface.entity.HpIfaceLog" >
+		SELECT 
+			<include refid="hpIfaceLogColumns"/>
+		FROM hp_iface_log a
+		<include refid="hpIfaceLogJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.iface.entity.HpIfaceLog" >
+		SELECT 
+			<include refid="hpIfaceLogColumns"/>
+		FROM hp_iface_log a
+		<include refid="hpIfaceLogJoins"/>
+		<where>
+			
+			<if test="merId != null and merId != ''">
+				AND a.mer_id = #{merId}
+			</if>
+			<if test="funcId != null and funcId != ''">
+				AND a.func_id = #{funcId}
+			</if>
+			<if test="createTime != null and createTime != ''">
+				AND a.create_time = #{createTime}
+			</if>
+			<if test="retcode != null and retcode != ''">
+				AND a.retcode = #{retcode}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.iface.entity.HpIfaceLog" >
+		SELECT 
+			<include refid="hpIfaceLogColumns"/>
+		FROM hp_iface_log a
+		<include refid="hpIfaceLogJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_iface_log(
+			pkid,
+			mer_id,
+			func_id,
+			create_time,
+			senddata,
+			errmsg,
+			retcode,
+			retdata,
+			ref0,
+			ref1,
+			ref2,
+			flag0,
+			flag1,
+			flag2
+		) VALUES (
+		    sys_guid(),
+			#{merId},
+			#{funcId},
+			#{createTime},
+			#{senddata},
+			#{errmsg},
+			#{retcode},
+			#{retdata},
+			#{ref0},
+			#{ref1},
+			#{ref2},
+			#{flag0},
+			#{flag1},
+			#{flag2}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_iface_log SET 	
+			mer_id = #{merId},
+			func_id = #{funcId},
+			create_time = #{createTime},
+			senddata = #{senddata},
+			errmsg = #{errmsg},
+			retcode = #{retcode},
+			retdata = #{retdata},
+			ref0 = #{ref0},
+			ref1 = #{ref1},
+			ref2 = #{ref2},
+			flag0 = #{flag0},
+			flag1 = #{flag1},
+			flag2 = #{flag2}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_iface_log
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_iface_log SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.iface.entity.HpIfaceLog" statementType="STATEMENT">
+		select * FROM hp_iface_log  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

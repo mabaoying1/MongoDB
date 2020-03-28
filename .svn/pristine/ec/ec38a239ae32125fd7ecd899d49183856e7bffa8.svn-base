@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpYkjlXnkDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+
+	<!-- 查询日期下面的用卡记录 -->
+	<select id="getHpYkjlXnlByTime" resultType="java.util.HashMap">
+		select id as "id",t.ehealth_card_id as "ehealth_card_id",t.medstep_code as "medstepcode",t.terminal_code as "terminalcode",t.channel_code as "channelcode"
+		from hp_ykjlxnk t where to_char(t.use_time,'yyyy-MM-dd')=#{date} and t.upload_time is null
+	</select>
+
+	<!-- 新增用卡记录 -->
+	<insert id="addHpYkjlXnk" parameterType="com.healthpay.modules.hc.entity.HpYkjlXnk">
+		<selectKey keyProperty="id" resultType="String" order="BEFORE">
+	      select sys_guid() from dual
+	    </selectKey>
+		insert into hp_ykjlxnk(id,ehealth_card_id,medstep_code,terminal_code,channel_code,use_time)
+		values(#{id},#{eHealthCardId},#{medstepCode},#{terminalCode},#{channelCode},#{useTime})
+	</insert>
+
+	<!-- 批量更新用卡上传时间 -->
+	<update id="updateHpYkjlXnlList" parameterType="java.util.HashMap">
+		update hp_ykjlxnk set upload_time=#{date}
+		where id in
+		<foreach collection="ykjlXnkList" item="item" index="index" separator=","  open="(" close=")">
+			#{item.id}
+		</foreach>
+	</update>
+</mapper>

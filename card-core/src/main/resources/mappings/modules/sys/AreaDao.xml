@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.sys.dao.AreaDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="areaColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.code,
+		a.name,
+		a.sort,
+		a.type as "type",
+		a.remarks as "remarks",
+		a.create_by AS "createBy.id",
+		a.create_date,
+		a.update_by AS "updateBy.id",
+		a.update_date,
+		a.del_flag,
+		(case when EXISTS (select 1 from sys_area t where t.parent_id = a.id) then 1 else 0 end) as "isParent",
+		p.name AS "parent.name"
+	</sql>
+	
+	<sql id="table_sequence">sys_area_0.nextval</sql>
+	
+	<sql id="areaJoins">
+		LEFT JOIN sys_office p ON p.id = a.parent_id
+    </sql>
+    
+	<select id="get" resultType="com.healthpay.modules.sys.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByCode" resultType="com.healthpay.modules.sys.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.code = #{code}
+	</select>
+	
+	<select id="findListByParent" resultType="com.healthpay.modules.sys.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.parent_id = #{parentId}
+		AND a.del_flag = 0
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.sys.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<if test="id != null and id != ''">
+			AND (a.parent_id = #{id})
+		</if>
+		ORDER BY a.code
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.sys.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM sys_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="parent != null and parent.id != null and parent.id != ''">
+			AND (o.id = #{parent.id} OR o.parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{parent.id}||',%')</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{parent.id}, ',%'))</if>
+		</if>
+		<if test="id != null and id != ''">
+			AND (a.parent_id = #{id})
+		</if>
+		<if test="id == null || id == ''">
+			AND (a.parent_id =0 or a.parent_id=1)
+		</if>
+		ORDER BY a.code
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="com.healthpay.modules.sys.entity.Area">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM sys_area a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO sys_area(
+			id, 
+			parent_id, 
+			parent_ids, 
+			code, 
+			name, 
+			sort,
+			type, 
+			create_by, 
+			create_date, 
+			update_by, 
+			update_date, 
+			remarks, 
+			del_flag
+		) VALUES (
+			sys_guid(),
+			#{parent.id}, 
+			#{parentIds}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{createBy.id}, 
+			#{createDate}, 
+			#{updateBy.id}, 
+			#{updateDate}, 
+			#{remarks}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE sys_area SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			code = #{code}, 
+			name = #{name}, 
+			sort = #{sort}, 
+			type = #{type}, 
+			update_by = #{updateBy.id}, 
+			update_date = #{updateDate}, 
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE sys_area SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM sys_area 
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+	<update id="deleteByLogic">
+		UPDATE sys_area SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE 
+					<if test="dbName == 'oracle'">'%,'||#{id}||',%'</if>
+					<if test="dbName == 'mysql'">CONCAT('%,', #{id}, ',%')</if>
+	</update>
+	
+</mapper>

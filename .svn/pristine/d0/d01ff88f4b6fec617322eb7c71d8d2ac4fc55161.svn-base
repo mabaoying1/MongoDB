@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.iface.dao.HpIfacePlatformareaDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpIfacePlatformareaColumns">
+		a.pkid AS "pkid",
+		a.areaid as "areaid",
+		a.code AS "code",
+		a.name AS "name",
+		a.platformid AS "platformid",
+		a.platformtype AS "platformtype"
+	</sql>
+
+	<sql id="table_sequence">SEQ_HP_IFACE_PLATFORMAREA.nextval</sql>
+
+	<sql id="hpIfacePlatformareaJoins">
+	</sql>
+	<delete id="deleteHpIfacePlatformarea">
+		DELETE FROM HP_IFACE_PLATFORMAREA WHERE PLATFORMID = #{platformid}
+	</delete>
+
+
+	<select id="get" resultType="com.healthpay.modules.iface.entity.HpIfacePlatformarea" >
+		SELECT 
+			<include refid="hpIfacePlatformareaColumns"/>
+		FROM hp_iface_platformarea a
+		<include refid="hpIfacePlatformareaJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.iface.entity.HpIfacePlatformarea" >
+		SELECT 
+			<include refid="hpIfacePlatformareaColumns"/>
+		FROM hp_iface_platformarea a
+		<include refid="hpIfacePlatformareaJoins"/>
+		<where>
+			
+			<if test="code != null and code != ''">
+				AND a.code = #{code}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.iface.entity.HpIfacePlatformarea" >
+		SELECT 
+			<include refid="hpIfacePlatformareaColumns"/>
+		FROM hp_iface_platformarea a
+		<include refid="hpIfacePlatformareaJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_iface_platformarea(
+			pkid,
+		    areaid,
+			code,
+			name,
+			platformid,
+			platformtype
+		) VALUES (
+			sys_guid(),
+		    #{areaid},
+			#{code},
+			#{name},
+			#{platformid},
+			#{platformtype}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_iface_platformarea SET
+			code = #{code},
+			areaid = #{areaid},
+			name = #{name},
+			platformid = #{platformid},
+			platformtype = #{platformtype}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_iface_platformarea
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_iface_platformarea SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.iface.entity.HpIfacePlatformarea" statementType="STATEMENT">
+		select * FROM hp_iface_platformarea  where ${propertyName} = '${value}'
+	</select>
+	<select id="getByCode" resultType="java.lang.Long">
+		SELECT DISTINCT PLATFORMID FROM HP_IFACE_PLATFORMAREA WHERE (PLATFORMTYPE=1 AND CODE=#{cityCode})
+		<if test="countyCode != null and countyCode != ''">
+			or (PLATFORMTYPE=2 AND CODE=#{countyCode})
+		</if>
+	</select>
+</mapper>

@@ -1,0 +1,631 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpCardholderDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpCardholderColumns">
+		a.identity_id AS "identityId",
+		a.nationality AS "nationality",
+		a.docu_type AS "docuType",
+		a.docu_id AS "docuId",
+		a.health_id AS "healthId",
+		a.new_farmid AS "newFarmid",
+		a.name AS "name",
+		a.birth AS "birth",
+		a.profession AS "profession",
+		a.address_type AS "addressType",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.marital_status AS "maritalStatus",
+		a.education_level AS "educationLevel",
+		a.countrycode AS "countrycode",
+		a.countryname AS "countryname",
+		a.provcode AS "provcode",
+		a.provname AS "provname",
+		a.citycode AS "citycode",
+		a.cityname AS "cityname",
+		a.countycode AS "countycode",
+		a.countyname AS "countyname",
+		a.towncode AS "towncode",
+		a.townname AS "townname",
+		a.villagecode AS "villagecode",
+		a.villagename AS "villagename",
+		a.address AS "address",
+		a.postcode AS "postcode",
+		a.countrycode2 AS "countrycode2",
+		a.countryname2 AS "countryname2",
+		a.provcode2 AS "provcode2",
+		a.provname2 AS "provname2",
+		a.citycode2 AS "citycode2",
+		a.cityname2 AS "cityname2",
+		a.countycode2 AS "countycode2",
+		a.countyname2 AS "countyname2",
+		a.towncode2 AS "towncode2",
+		a.townname2 AS "townname2",
+		a.villagecode2 AS "villagecode2",
+		a.villagename2 AS "villagename2",
+		a.address2 AS "address2",
+		a.paytype AS "paytype",
+		a.phone AS "phone",
+		a.tel AS "tel",
+		a.email AS "email",
+		a.attn_name AS "attnName",
+		a.attn_phone AS "attnPhone",
+		a.attn_rela AS "attnRela",
+		a.attn_name2 AS "attnName2",
+		a.attn_phone2 AS "attnPhone2",
+		a.attn_rela2 AS "attnRela2",
+		a.attn_name3 AS "attnName3",
+		a.attn_phone3 AS "attnPhone3",
+		a.attn_rela3 AS "attnRela3",
+		a.status AS "status",
+		a.source AS "source",
+		a.is_black AS "isBlack",
+		a.is_dead AS "isDead",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.create_by_name AS "createByName.id",
+		a.audit_date AS "auditDate",
+		a.audit_by AS "auditBy",
+		a.audit_by_name AS "auditByName",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.update_by_name AS "updateByName.id",
+		a.flag00 AS "flag00",
+		a.flag01 AS "flag01",
+		a.flag02 AS "flag02",
+		a.flag03 AS "flag03",
+		a.flag04 AS "flag04",
+		a.flag05 AS "flag05",
+		a.flag06 AS "flag06",
+		a.flag07 AS "flag07",
+		a.flag08 AS "flag08",
+		a.flag09 AS "flag09",
+		a.url0 AS "url0",
+		a.url1 AS "url1",
+		a.url2 AS "url2",
+		a.url3 AS "url3",
+		a.url4 AS "url4",
+		a.url5 AS "url5",
+		a.url6 AS "url6",
+		a.url7 AS "url7",
+		a.url8 AS "url8",
+		a.str00 AS "str00",
+		a.str01 AS "str01",
+		a.str02 AS "str02",
+		a.str03 AS "str03",
+		a.str04 AS "str04",
+		a.str05 AS "str05",
+		a.str06 AS "str06",
+		a.str07 AS "str07",
+		a.str08 AS "str08",
+		a.str09 AS "str09",
+		a.str10 AS "str10",
+		a.opt00 AS "opt00",
+		a.opt01 AS "opt01",
+		a.opt02 AS "opt02",
+		a.opt03 AS "opt03",
+		a.opt04 AS "opt04",
+		a.opt05 AS "opt05",
+		a.remark AS "remark",
+		a.delflag AS "delflag",
+		a.area_id as "area.id",
+		a.area_id2 as "area2.id",
+		o.name as "area.name",
+		o1.name as "area2.name"
+	</sql>
+
+	<sql id="hpCardholderJoins">
+		LEFT JOIN sys_area o on o.id = a.area_id
+		LEFT JOIN sys_area o1 on o1.id = a.area_id2
+	</sql>
+
+	<sql id="simpleHpCardholderColumns">
+		a.identity_id AS "identityId",
+		a.nationality AS "nationality",
+		a.docu_type AS "docuType",
+		a.docu_id AS "docuId",
+		a.health_id AS "healthId",
+		a.new_farmid AS "newFarmid",
+		a.name AS "name",
+		a.birth AS "birth",
+		a.profession AS "profession",
+		a.address_type AS "addressType",
+		a.sex AS "sex",
+		a.nation AS "nation",
+		a.marital_status AS "maritalStatus",
+		a.education_level AS "educationLevel",
+		a.countrycode AS "countrycode",
+		a.countryname AS "countryname",
+		a.provcode AS "provcode",
+		a.provname AS "provname",
+		a.citycode AS "citycode",
+		a.cityname AS "cityname",
+		a.countycode AS "countycode",
+		a.countyname AS "countyname",
+		a.towncode AS "towncode",
+		a.townname AS "townname",
+		a.villagecode AS "villagecode",
+		a.villagename AS "villagename",
+		a.address AS "address",
+		a.postcode AS "postcode",
+		a.countrycode2 AS "countrycode2",
+		a.countryname2 AS "countryname2",
+		a.provcode2 AS "provcode2",
+		a.provname2 AS "provname2",
+		a.citycode2 AS "citycode2",
+		a.cityname2 AS "cityname2",
+		a.countycode2 AS "countycode2",
+		a.countyname2 AS "countyname2",
+		a.towncode2 AS "towncode2",
+		a.townname2 AS "townname2",
+		a.villagecode2 AS "villagecode2",
+		a.villagename2 AS "villagename2",
+		a.address2 AS "address2",
+		a.paytype AS "paytype",
+		a.phone AS "phone",
+		a.tel AS "tel",
+		a.email AS "email",
+		a.attn_name AS "attnName",
+		a.attn_phone AS "attnPhone",
+		a.attn_rela AS "attnRela",
+		a.attn_name2 AS "attnName2",
+		a.attn_phone2 AS "attnPhone2",
+		a.attn_rela2 AS "attnRela2",
+		a.attn_name3 AS "attnName3",
+		a.attn_phone3 AS "attnPhone3",
+		a.attn_rela3 AS "attnRela3",
+		a.status AS "status",
+		a.source AS "source",
+		a.is_black AS "isBlack",
+		a.is_dead AS "isDead",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.create_by_name AS "createByName.id",
+		a.audit_date AS "auditDate",
+		a.audit_by AS "auditBy",
+		a.audit_by_name AS "auditByName",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.update_by_name AS "updateByName.id",
+		a.flag00 AS "flag00",
+		a.url0 AS "url0",
+		a.url1 AS "url1",
+		a.str00 AS "str00",
+		a.remark AS "remark",
+		a.delflag AS "delflag",
+		a.area_id as "area.id",
+		a.area_id2 as "area2.id"
+	</sql>
+
+	<select id="get" resultType="com.healthpay.modules.hc.entity.HpCardholder" >
+		SELECT
+			<include refid="simpleHpCardholderColumns"/>
+		FROM hp_cardholder a
+		WHERE a.identity_id = #{identityId}
+	</select>
+
+	<select id="getByPhone" resultType="com.healthpay.modules.hc.entity.HpCardholder" >
+		SELECT
+			<include refid="hpCardholderColumns"/>
+		FROM hp_cardholder a
+		<include refid="hpCardholderJoins"/>
+		WHERE a.phone = #{phone}
+	</select>
+
+	<select id="getByNationAndDocuTypeAndDocuId" resultType="com.healthpay.modules.hc.entity.HpCardholder" >
+		SELECT
+			<include refid="hpCardholderColumns"/>
+		FROM hp_cardholder a
+		<include refid="hpCardholderJoins"/>
+		WHERE a.nationality = #{0} and a.docu_type = #{1} and a.docu_id = #{2}
+	</select>
+
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpCardholder" >
+		SELECT
+			<include refid="hpCardholderColumns"/>
+		FROM hp_cardholder a
+		<include refid="hpCardholderJoins"/>
+		<where>
+			 AND 1=1 <![CDATA[ and a.update_date<sysdate ]]>
+			<if test="name != null and name != ''">
+				AND a.name like
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+			<if test="healthId != null and healthId != ''">
+				AND a.health_id like
+					<if test="dbName == 'oracle'">'%'||#{healthId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{healthId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{healthId},'%')</if>
+			</if>
+			<if test="newFarmid != null and newFarmid != ''">
+				AND a.new_farmid like
+					<if test="dbName == 'oracle'">'%'||#{newFarmid}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{newFarmid}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{newFarmid},'%')</if>
+			</if>
+			<if test="docuId != null and docuId != ''">
+				AND a.docu_id =#{docuId}
+				<!--<if test="dbName == 'oracle'">'%'||#{docuId}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{docuId}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{docuId},'%')</if>-->
+			</if>
+			<if test="phone != null and phone != ''">
+				AND a.phone =#{phone}
+				<!--<if test="dbName == 'oracle'">'%'||#{phone}||'%'</if>
+				<if test="dbName == 'mssql'">'%'+#{phone}+'%'</if>
+				<if test="dbName == 'mysql'">concat('%',#{phone},'%')</if>-->
+			</if>
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="com.healthpay.modules.hc.entity.HpCardholder" >
+		SELECT
+			<include refid="hpCardholderColumns"/>
+		FROM hp_cardholder a
+		<include refid="hpCardholderJoins"/>
+		<where>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+    <sql id="findResidentPublic">
+        SELECT to_char(a.create_date,'yyyy-mm-dd') as "createDateStr",a.area_id2 as "area.id",a.PROVNAME2 as "provname2" ,a.CITYNAME2 as "cityname2",a.COUNTYNAME2 as "countyname2",a.TOWNNAME2 as "townname2",a.VILLAGENAME2 as "villagename2",count(a.identity_id) as "count" from hp_cardholder a
+        <include refid="hpCardholderJoins"/>
+        WHERE 1=1
+        <if test="beginDate != null and beginDate != ''">
+            AND to_char(a.create_date,'yyyy-mm-dd') >= #{beginDate}
+        </if>
+        <if test="endDate != null and endDate != ''">
+            <![CDATA[AND to_char(a.create_date,'yyyy-mm-dd') <= #{endDate}]]>
+        </if>
+        <if test="area != null and area.id != null and area.id != ''">
+            AND (a.area_id2 = #{area.id} or o1.parent_ids like '%'||#{area.id}||',%')
+        </if>
+        <!-- 数据范围过滤 -->
+        ${sqlMap.dsf}
+        group by to_char(a.create_date,'yyyy-mm-dd'),a.area_id2,a.provname2,a.cityname2,a.countyname2,a.townname2,a.villagename2
+    </sql>
+
+	<select id="findResidentList" resultType="com.healthpay.modules.hc.entity.HpCardholder">
+        <include refid="findResidentPublic"/> order by to_char(a.create_date,'yyyy-mm-dd') DESC
+	</select>
+
+	<select id="findChartData" resultType="java.util.LinkedHashMap">
+		SELECT SUM(DECODE(substr(B."createDateStr",6,2), '01', B."count", 0)) "01",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '02', B."count", 0)) "02",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '03', B."count", 0)) "03",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '04', B."count", 0)) "04",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '05', B."count", 0)) "05",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '06', B."count", 0)) "06",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '07', B."count", 0)) "07",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '08', B."count", 0)) "08",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '09', B."count", 0)) "09",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '10', B."count", 0)) "10",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '11', B."count", 0)) "11",
+			   SUM(DECODE(substr(B."createDateStr",6,2), '12', B."count", 0)) "12"
+		FROM (SELECT to_char(to_date(C."createDateStr",'yyyy-mm-dd'),'yyyy-mm') "createDateStr",count(C."count") "count" from (<include refid="findResidentPublic"/>) C group by to_char(to_date(C."createDateStr",'yyyy-mm-dd'),'yyyy-mm')) B
+		WHERE 1 = 1
+		AND substr(B."createDateStr",1,4) = #{year}
+
+	</select>
+
+    <select id="getTotalResident" resultType="java.lang.Integer">
+        select sum("count") from (<include refid="findResidentPublic"/>)
+    </select>
+
+	<insert id="insert">
+		INSERT INTO hp_cardholder(
+			identity_id,
+			nationality,
+			docu_type,
+			docu_id,
+			health_id,
+			new_farmid,
+			name,
+			birth,
+			profession,
+			address_type,
+			sex,
+			nation,
+			marital_status,
+			education_level,
+			countrycode,
+			countryname,
+			provcode,
+			provname,
+			citycode,
+			cityname,
+			countycode,
+			countyname,
+			towncode,
+			townname,
+			villagecode,
+			villagename,
+			address,
+			postcode,
+			countrycode2,
+			countryname2,
+			provcode2,
+			provname2,
+			citycode2,
+			cityname2,
+			countycode2,
+			countyname2,
+			towncode2,
+			townname2,
+			villagecode2,
+			villagename2,
+			address2,
+			paytype,
+			phone,
+			tel,
+			email,
+			attn_name,
+			attn_phone,
+			attn_rela,
+			attn_name2,
+			attn_phone2,
+			attn_rela2,
+			attn_name3,
+			attn_phone3,
+			attn_rela3,
+			status,
+			source,
+			is_black,
+			is_dead,
+			create_date,
+			create_by,
+			create_by_name,
+			audit_date,
+			audit_by,
+			audit_by_name,
+			update_date,
+			update_by,
+			update_by_name,
+			flag00,
+			url0,
+			url1,
+			str00,
+			remark,
+			delflag,
+			area_id,
+			area_id2
+		) VALUES (
+			#{identityId},
+			#{nationality},
+			#{docuType},
+			#{docuId},
+			#{healthId},
+			#{newFarmid},
+			#{name},
+			#{birth},
+			#{profession},
+			#{addressType},
+			#{sex},
+			#{nation},
+			#{maritalStatus},
+			#{educationLevel},
+			#{countrycode},
+			#{countryname},
+			#{provcode},
+			#{provname},
+			#{citycode},
+			#{cityname},
+			#{countycode},
+			#{countyname},
+			#{towncode},
+			#{townname},
+			#{villagecode},
+			#{villagename},
+			#{address},
+			#{postcode},
+			#{countrycode2},
+			#{countryname2},
+			#{provcode2},
+			#{provname2},
+			#{citycode2},
+			#{cityname2},
+			#{countycode2},
+			#{countyname2},
+			#{towncode2},
+			#{townname2},
+			#{villagecode2},
+			#{villagename2},
+			#{address2},
+			#{paytype},
+			#{phone},
+			#{tel},
+			#{email},
+			#{attnName},
+			#{attnPhone},
+			#{attnRela},
+			#{attnName2},
+			#{attnPhone2},
+			#{attnRela2},
+			#{attnName3},
+			#{attnPhone3},
+			#{attnRela3},
+			#{status},
+			#{source},
+			#{isBlack},
+			#{isDead},
+			#{createDate},
+			#{createBy.id},
+			#{createByName.id},
+			#{auditDate},
+			#{auditBy},
+			#{auditByName},
+			#{updateDate},
+			#{updateBy.id},
+			#{updateByName.id},
+			#{flag00},
+			#{url0},
+			#{url1},
+			#{str00},
+			#{remark},
+			#{delflag},
+			#{area.id},
+			#{area2.id}
+		)
+	</insert>
+
+	<!--更新持卡人信息 -->
+	<update id="update">
+		UPDATE hp_cardholder SET 	
+			nationality = #{nationality},
+			docu_type = #{docuType},
+			docu_id = #{docuId},
+			health_id = #{healthId},
+			new_farmid = #{newFarmid},
+			name = #{name},
+			birth = #{birth},
+			profession = #{profession},
+			address_type = #{addressType},
+			sex = #{sex},
+			nation = #{nation},
+			marital_status = #{maritalStatus},
+			education_level = #{educationLevel},
+			countrycode = #{countrycode},
+			countryname = #{countryname},
+			provcode = #{provcode},
+			provname = #{provname},
+			citycode = #{citycode},
+			cityname = #{cityname},
+			countycode = #{countycode},
+			countyname = #{countyname},
+			towncode = #{towncode},
+			townname = #{townname},
+			villagecode = #{villagecode},
+			villagename = #{villagename},
+			address = #{address},
+			postcode = #{postcode},
+			countrycode2 = #{countrycode2},
+			countryname2 = #{countryname2},
+			provcode2 = #{provcode2},
+			provname2 = #{provname2},
+			citycode2 = #{citycode2},
+			cityname2 = #{cityname2},
+			countycode2 = #{countycode2},
+			countyname2 = #{countyname2},
+			towncode2 = #{towncode2},
+			townname2 = #{townname2},
+			villagecode2 = #{villagecode2},
+			villagename2 = #{villagename2},
+			address2 = #{address2},
+			paytype = #{paytype},
+			phone = #{phone},
+			tel = #{tel},
+			email = #{email},
+			attn_name = #{attnName},
+			attn_phone = #{attnPhone},
+			attn_rela = #{attnRela},
+			attn_name2 = #{attnName2},
+			attn_phone2 = #{attnPhone2},
+			attn_rela2 = #{attnRela2},
+			attn_name3 = #{attnName3},
+			attn_phone3 = #{attnPhone3},
+			attn_rela3 = #{attnRela3},
+			status = #{status},
+			source = #{source},
+			is_black = #{isBlack},
+			is_dead = #{isDead},
+			create_by_name = #{createBy.name},
+			audit_date = #{auditDate},
+			audit_by = #{auditBy},
+			audit_by_name = #{auditByName},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			update_by_name = #{updateBy.name},
+			flag00 = #{flag00},
+			url0 = #{url0},
+			url1 = #{url1},
+			str00 = #{str00},
+			remark = #{remark},
+			delflag = #{delflag},
+			area_id = #{area.id},
+			area_id2 = #{area2.id}
+		WHERE identity_id = #{identityId}
+	</update>
+
+
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_cardholder
+		WHERE a.identity_id = #{identityId}
+	</update>
+
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_cardholder SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE a.identity_id = #{identityId}
+	</update>
+
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.hc.entity.HpCardholder" statementType="STATEMENT">
+		select * FROM hp_cardholder  where ${propertyName} = '${value}'
+	</select>
+
+	<sql id="findResistatPublic">
+		SELECT to_char(a.create_date,'yyyy-mm-dd') as "createDateStr",a.area_id as "area.id",a.PROVNAME as "provname" ,a.CITYNAME as "cityname",a.COUNTYNAME as "countyname",count(a.identity_id) as "count" from hp_cardholder a
+		<include refid="hpCardholderJoins"/>
+		WHERE 1=1
+		<if test="beginDate != null and beginDate != ''">
+			AND to_char(a.create_date,'yyyy-mm-dd') >= #{beginDate}
+		</if>
+		<if test="endDate != null and endDate != ''">
+			<![CDATA[AND to_char(a.create_date,'yyyy-mm-dd') <= #{endDate}]]>
+		</if>
+		<if test="area != null and area.id != null and area.id != ''">
+			AND (a.area_id = #{area.id} or o.parent_ids like '%'||#{area.id}||',%')
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		group by to_char(a.create_date,'yyyy-mm-dd'),a.area_id,a.provname,a.cityname,a.countyname
+	</sql>
+
+	<select id="findResistatList" resultType="com.healthpay.modules.hc.entity.HpCardholder">
+		<include refid="findResistatPublic"/> order by to_char(a.create_date,'yyyy-mm-dd') DESC
+	</select>
+
+	<select id="getTotalResistat" resultType="java.lang.Integer">
+		select sum("count") from (<include refid="findResistatPublic"/>)
+	</select>
+
+	<select id="getTable" resultType="com.healthpay.modules.hc.entity.HpCardholder">
+		select count(1) count,d.createDateStr,d.provname2,d.cityname2,d.countyname2 from
+		(select <if test="flag09==1">to_char(r.create_date,'yyyy-MM-dd')</if>
+		<if test="flag09==2">to_char(r.create_date,'yyyy-MM')</if>
+		<if test="flag09==null or flag09=='' or flag09==3">to_char(r.create_date,'yyyy')</if> createDateStr,
+		r.area_id2 area_id2 ,r.provname2 provname2,r.CITYNAME2 cityname2,r.COUNTYNAME2 countyname2,o.parent_ids parent_ids
+		from hp_cardholder r LEFT JOIN sys_area o on o.id = r.area_id) d
+		WHERE 1=1
+		<if test="area != null and area.id != null and area.id != ''">
+			AND (d.area_id2 = #{area.id} or d.parent_ids like '%'||#{area.id}||',%')
+		</if>
+		group by d.createDateStr,d.provname2,d.cityname2,d.countyname2
+	</select>
+
+
+</mapper>

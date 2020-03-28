@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpRealCardStockBillDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpRealCardStockCommon">
+		a.PKID AS "pkid",
+		a.SEND_ORGANI_CODE AS "sendOrganiCode",
+		a.OUT_ORDERNO AS "outOrderNo",
+		a.CARDNO_ORI_IN_OUT_STOCK AS "cardNOOriInOutStock",
+		a.CARDNO_ABORT_IN_OUT_STOCK AS "cardNOAbortInOutStock",
+		a.STOCK_IN_OUT_MOUNT AS "stockInOutMount",
+		a.UNIT AS "unit",
+		a.HOSPITAL_CONTACTS AS "hospitalContacts",
+		a.HOSPITAL_PHONE AS "hospitalPhone",
+		a.CARD_SUPPLIER AS "cardSupplier",
+		a.SUPPLIER AS "supplier",
+		a.SUPPLIER_PHONE AS "supplierPhone",
+		a.MAKE_CARD_BY_PERSON AS "makeCardByPerson",
+		a.CARD_DATE AS "cardDate",
+		a.RECEIVE_CARD_BY_PERSON AS "receiveCardByPerson",
+		a.RECEIVE_DATE AS "receiveDate",
+		a.REGISTER_PERSON AS "registerPerson",
+		a.REGISTER_DATE AS "registerDate",
+		a.TYPE AS "type",
+		a.STATUS AS "status"
+	</sql>
+	<sql id="table_sequence">SEQ_HP_REAL_CARD_STOCK_BILL.nextval</sql>
+	<sql id="HpRealCardStockBillCon">
+		<if test="pkid != null">
+			and a.pkid=#{pkid}
+		</if>
+		<if test="status != null">
+			and a.status=#{status}
+		</if>
+		<if test="type != null">
+			and a.type=#{type}
+		</if>
+		<if test="sendOrganiName != null and sendOrganiName!=''">
+			and o.name like '%'||#{sendOrganiName}||'%'
+		</if>
+		<if test="sendOrganiCode != null and sendOrganiCode!=''">
+			and a.SEND_ORGANI_CODE=#{sendOrganiCode}
+		</if>
+		<if test="outOrderNo != null and outOrderNo!=''">
+			and a.OUT_ORDERNO=#{outOrderNo}
+		</if>
+		<if test="hospitalContacts != null and hospitalContacts!=''">
+			and a.HOSPITAL_CONTACTS   like '%'||#{hospitalContacts}||'%'
+		</if>
+		<if test="cardSupplier != null and cardSupplier!=''">
+			and a.CARD_SUPPLIER  like '%'||#{cardSupplier}||'%'
+		</if>
+		<if test="supplier != null and supplier!=''">
+			and a.SUPPLIER  like '%'||#{supplier}||'%'
+		</if>
+		<if test="makeCardByPerson != null and makeCardByPerson!=''">
+			and a.MAKE_CARD_BY_PERSON  like '%'||#{makeCardByPerson}||'%'
+		</if>
+		<if test="receiveCardByPerson != null and receiveCardByPerson!=''">
+			and a.RECEIVE_CARD_BY_PERSON like '%'||#{receiveCardByPerson}||'%'
+		</if>
+		<if test="registerPerson != null and registerPerson!=''">
+			and a.REGISTER_PERSON=#{registerPerson}
+		</if>
+		<if test="registerPersonName != null and registerPersonName!=''">
+			and u.name like '%'||#{registerPersonName}||'%'
+		</if>
+		<if test="registerStartDate != null and registerStartDate!=''">
+		<![CDATA[and a.register_date >= #{registerStartDate}]]>
+		</if>
+		<if test="registerEndDate != null and registerEndDate!=''">
+			<![CDATA[and a.register_date <= #{registerEndDate}]]>
+		</if>
+
+	</sql>
+
+	<sql id="HpRealCardStockBillUpdCon">
+		<if test="pkid != null">
+			and a.pkid=#{pkid}
+		</if>
+	</sql>
+
+	<sql id="HpRealCardStockBillUpd">
+		<if test="type != null">
+			a.type=#{type},
+		</if>
+		<if test="cardNOOriInOutStock != null and cardNOOriInOutStock!=''">
+			a.CARDNO_ORI_IN_Out_STOCK=#{cardNOOriInOutStock},
+		</if>
+		<if test="cardNOAbortInOutStock != null and cardNOAbortInOutStock!=''">
+			a.CARDNO_ABORT_IN_OUT_STOCK=#{cardNOAbortInOutStock},
+		</if>
+		<if test="stockInOutMount != null and stockInOutMount!=''">
+			a.STOCK_IN_OUT_MOUNT=#{stockInOutMount},
+		</if>
+		<if test="sendOrganiCode != null and sendOrganiCode!=''">
+			a.SEND_ORGANI_CODE=#{sendOrganiCode},
+		</if>
+		<if test="outOrderNo != null and outOrderNo!=''">
+			a.OUT_ORDERNO=#{outOrderNo},
+		</if>
+		<if test="hospitalContacts != null and hospitalContacts!=''">
+			a.HOSPITAL_CONTACTS=#{hospitalContacts},
+		</if>
+		<if test="hospitalPhone != null and hospitalPhone!=''">
+			a.HOSPITAL_PHONE=#{hospitalPhone},
+		</if>
+		<if test="cardSupplier != null and cardSupplier!=''">
+			a.CARD_SUPPLIER=#{cardSupplier},
+		</if>
+		<if test="supplier != null and supplier!=''">
+			a.SUPPLIER=#{supplier},
+		</if>
+		<if test="supplierPhone != null and supplierPhone!=''">
+			a.SUPPLIER_PHONE=#{supplierPhone},
+		</if>
+		<if test="cardDate != null and cardDate!=''">
+			a.CARD_DATE=#{cardDate},
+		</if>
+		<if test="makeCardByPerson != null and makeCardByPerson!=''">
+			a.MAKE_CARD_BY_PERSON=#{makeCardByPerson},
+		</if>
+		<if test="receiveCardByPerson != null and receiveCardByPerson!=''">
+			a.RECEIVE_CARD_BY_PERSON=#{receiveCardByPerson},
+		</if>
+		<if test="receiveDate != null and receiveDate!=''">
+			a.RECEIVE_DATE=#{receiveDate},
+		</if>
+		<if test="registerPerson != null and registerPerson!=''">
+			a.REGISTER_PERSON=#{registerPerson},
+		</if>
+		<if test="status != null and status!=''">
+			a.status=#{status},
+		</if>
+	</sql>
+	<sql id="leftJoin">
+		left join sys_user u on a.REGISTER_PERSON=u.id
+		left join sys_office o on a.SEND_ORGANI_CODE=o.code
+	</sql>
+
+	<insert id="insertRealCardStockBill" parameterType="com.healthpay.modules.hc.entity.HpRealCardStockBill">
+		insert into hp_real_card_stock_bill(
+		PKID ,SEND_ORGANI_CODE ,OUT_ORDERNO ,CARDNO_ORI_IN_OUT_STOCK,CARDNO_ABORT_IN_OUT_STOCK,STOCK_IN_OUT_MOUNT ,
+		UNIT,HOSPITAL_CONTACTS,HOSPITAL_PHONE,CARD_SUPPLIER,SUPPLIER,SUPPLIER_PHONE,
+		MAKE_CARD_BY_PERSON,CARD_DATE,RECEIVE_CARD_BY_PERSON,RECEIVE_DATE,REGISTER_PERSON,REGISTER_DATE,TYPE,STATUS)
+		VALUES (sys_guid(),#{sendOrganiCode},#{outOrderNo},#{cardNOOriInOutStock},#{cardNOAbortInOutStock},#{stockInOutMount},
+		#{unit},#{hospitalContacts},#{hospitalPhone},#{cardSupplier},
+		#{supplier},#{supplierPhone},#{makeCardByPerson},#{cardDate},#{receiveCardByPerson},#{receiveDate},#{registerPerson},sysdate,#{type},#{status})
+	</insert>
+
+	<select id="get" resultType="com.healthpay.modules.hc.entity.HpRealCardStockBill">
+		SELECT o.name as "sendOrganiName",
+		<include refid="hpRealCardStockCommon"/>
+		FROM hp_real_card_stock_bill a
+		<include refid="leftJoin" />
+		<where>
+			<include refid="HpRealCardStockBillCon"/>
+		</where>
+	</select>
+
+	<select id="getRealCardStockBill" resultType="com.healthpay.modules.hc.entity.HpRealCardStockBill" parameterType="com.healthpay.modules.hc.search.HpRealCardStockBillSearch" >
+		SELECT
+		<include refid="hpRealCardStockCommon"/>
+		FROM hp_real_card_stock_bill a
+		<include refid="leftJoin" />
+		<where>
+			<include refid="HpRealCardStockBillCon"/>
+		</where>
+	</select>
+
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpRealCardStockBill" >
+		SELECT u.name as registerPersonName,o.name AS "sendOrganiName",
+		<include refid="hpRealCardStockCommon"/>
+		FROM hp_real_card_stock_bill a
+		<include refid="leftJoin" />
+		<where>
+			<include refid="HpRealCardStockBillCon" />
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.CARD_DATE DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<!--<update id="update" parameterType="com.healthpay.modules.hc.entity.HpRealCardStockBill" >
+		update hp_real_card_stock_bill a
+		<set >
+			<include refid="HpRealCardStockBillUpd"/>
+		</set>
+		<where>
+			<include refid="HpRealCardStockBillCon"/>
+		</where>
+	</update>-->
+	<update id="updateRealCardStockBill" parameterType="com.healthpay.modules.hc.entity.HpRealCardStockBill" >
+		update hp_real_card_stock_bill a
+		<set >
+			<include refid="HpRealCardStockBillUpd"/>
+		</set>
+		<where>
+			<include refid="HpRealCardStockBillUpdCon"/>
+		</where>
+	</update>
+
+	<update id="delete">
+		DELETE FROM hp_real_card_stock_bill
+		WHERE pkid = #{pkid}
+	</update>
+
+</mapper>

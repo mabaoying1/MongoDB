@@ -1,0 +1,116 @@
+package com.healthpay.iface.service.impl;
+
+import com.alibaba.fastjson.JSONObject;
+import com.healthpay.common.entity.ProRequest;
+import com.healthpay.common.entity.ProResponse;
+import com.healthpay.common.exception.BusException;
+import com.healthpay.common.service.proCard.IPCardService;
+import com.healthpay.common.utils.DateUtils;
+import com.healthpay.common.utils.RandomUtils;
+import com.healthpay.iface.annotation.BsoftCustomField;
+import com.healthpay.iface.util.StringUtils;
+import com.healthpay.iface.vo.QueryParamVO;
+import com.healthpay.iface.vo.ResResultVo;
+import com.healthpay.modules.hc.entity.HpHealthcard;
+import com.healthpay.modules.hc.service.HpHealthcardService;
+import com.healthpay.modules.sys.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+* @ClassName: A1029
+* @Description: 注销电子健康卡
+* @author mabaoying
+* @date 2019年8月12日
+* @最后修改人：
+* @最后修改时间：
+*/
+@Service
+public class A1029 extends EHCAbstractHandlerImpl{
+
+	@BsoftCustomField
+	QueryParamVO vo;
+	@Autowired
+	HpHealthcardService hpHealthcardService;
+	@Autowired
+	private IPCardService proCardService;
+
+	public Object doHandler(String appId,String appSecret,String realPath) throws Exception {
+		ResResultVo ret=new ResResultVo();
+		String qrCode=vo.getQrCode();
+		String docuType;
+		String docuId;
+		String healthCardId;
+		if(StringUtils.isBlank(vo.getIdCard()) && (StringUtils.isBlank(vo.getDocuType())|| StringUtils.isBlank(vo.getDocuId()))){
+			throw new BusException("居民身份证号或（证件类型、证件号码）不能同时为空!");
+		}
+
+		if(StringUtils.isBlank(qrCode)){
+			throw new BusException("二维码数据内容不能为空!");
+		}
+		//没有证件类型就默认是身份证
+		if(StringUtils.isNotBlank(vo.getDocuType())){
+			docuType=vo.getDocuType();
+			docuId=vo.getDocuId()==null ? vo.getIdCard() : vo.getDocuId();
+		}else{
+			docuType="01";
+			docuId=vo.getIdCard()==null ? vo.getDocuId() : vo.getIdCard();
+		}
+
+
+		String[] str= qrCode.split(":");
+		healthCardId = str[0]; // 获得电子健康卡ID
+		//只有本地注销成功，才能注销省卡管的
+		HpHealthcard hpHealthcard=hpHealthcardService.getByPkid(healthCardId);
+		if(null==hpHealthcard){
+			throw new BusException("该健康卡不存在!");
+		}
+
+		if(!"2".equals(hpHealthcard.getStatus())){
+			throw new BusException("该健康卡未认证或者已注销!");
+		}
+
+		if(!hpHealthcard.getIdentityId().equals(docuType+docuId)){
+			throw new BusException("身份证与二维码不匹配，注销失败!");
+		}
+
+		try{
+			//注销
+			hpHealthcard.setStatus("3");
+			hpHealthcard.setUpdateDate(new Date());
+			User updateBy = new User();
+			updateBy.setId("1");//默认系统管理员
+			hpHealthcard.setUpdateBy(updateBy);
+			hpHealthcardService.updateByIdentityId(hpHealthcard);
+
+			//省卡管注销
+			//修改省卡管电子健康卡信息
+			Map<String,Object> content=new HashMap<>();
+			content.put("ehealth_card_id",healthCardId);//电子健康卡ID
+			content.put("revoke_no", RandomUtils.getAlterNo());//外部变更流水号
+			content.put("revoke_time", DateUtils.formatDate(new Date(),"yyyyMMddHHmmss"));//外部变更时间
+			ProRequest proRequest=new ProRequest();
+			proRequest.setApp_id(appId);//应用编号
+			proRequest.setMethod("ehc.ehealthcard.close");//接口名称
+			proRequest.setBiz_content(JSONObject.toJSONString(content));//请求参数集合
+			ProResponse proResponse=proCardService.process(proRequest,appSecret);//发送请求
+			//请求失败
+			if(!"10".equals(proResponse.getCode())){  //10成功   00失败
+				throw new BusException(proResponse.getMessage());
+			}
+			//封装响应参数
+			JSONObject jsonObject = JSONObject.parseObject(proResponse.getBiz_content());
+			String mindexId=jsonObject.getString("mindex_id");
+			ret.setHealthCardId(healthCardId);
+			ret.setMindexId(mindexId);
+			return ret;
+		}catch (Exception e){
+			throw new BusException("服务异常!");
+		}
+	}
+	
+}

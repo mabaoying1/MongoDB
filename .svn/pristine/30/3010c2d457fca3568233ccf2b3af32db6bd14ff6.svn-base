@@ -1,0 +1,225 @@
+package com.healthpay.iface.service.impl;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import javax.imageio.ImageIO;
+
+import com.healthpay.common.service.proCard.IPCardService;
+import org.apache.commons.beanutils.MethodUtils;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.healthpay.common.Constant;
+import com.healthpay.common.annotation.NotNull;
+import com.healthpay.common.config.Global;
+import com.healthpay.common.exception.BusException;
+import com.healthpay.common.utils.IdGen;
+import com.healthpay.common.utils.StringUtils;
+import com.healthpay.iface.annotation.BsoftCustomField;
+import com.healthpay.iface.service.IEHCHandler;
+import com.healthpay.iface.util.IBaseModel;
+import com.healthpay.iface.vo.ResResultVo;
+import com.healthpay.modules.hc.entity.HpHealthcard;
+import com.healthpay.modules.hc.service.HpApplycardHisService;
+import com.healthpay.modules.hc.service.HpApplycardService;
+import com.healthpay.modules.hc.service.HpCardaccountService;
+import com.healthpay.modules.hc.service.HpCardholderService;
+import com.healthpay.modules.hc.service.HpHealthcardService;
+import com.healthpay.modules.hc.service.HpMerCardlistService;
+import com.healthpay.modules.hc.service.HpRealCardService;
+import com.healthpay.modules.iface.service.HpIfaceAddressService;
+import com.healthpay.modules.iface.service.HpIfaceMerchantService;
+import com.healthpay.modules.iface.service.HpIfaceMsgqueueService;
+import com.healthpay.modules.sys.service.AreaService;
+import com.healthpay.modules.sys.service.OfficeService;
+
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
+
+/**    
+* @ClassName: ElecHealthCardAbstractServiceImpl 
+* @Description: TODO(这里用一句话描述这个类的作用) 
+* @author mabaoying
+* @date 2019年7月30日
+* @最后修改人：
+* @最后修改时间：
+* 
+* 
+*/
+public abstract class EHCAbstractHandlerImpl  implements IEHCHandler {
+	//json测试用
+	//protected static final ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
+	protected Logger logger = LoggerFactory.getLogger(getClass());
+	@Autowired
+	protected HpIfaceMsgqueueService hpIfaceMsgqueueService;
+	@Autowired
+	protected HpMerCardlistService hpMerCardlistService;
+	@Autowired
+	protected HpApplycardService hpApplycardService;
+	@Autowired
+	protected HpApplycardHisService hpApplycardHisService;
+	@Autowired
+	protected HpCardholderService hpCardholderService;
+	@Autowired
+	protected HpHealthcardService hpHealthcardService;
+	@Autowired
+	protected HpCardaccountService hpCardaccountService;
+	@Autowired
+	protected HpRealCardService hpRealCardService;
+	@Autowired
+	protected HpIfaceMerchantService hpIfaceMerchantService;
+	@Autowired
+	protected OfficeService officeService;
+	@Autowired
+	protected AreaService areaService;
+	@Autowired
+	protected HpIfaceAddressService hpIfaceAddressService;
+
+	protected Object backSdata;
+
+	@Override
+	public Object RHCMessageServer(String merid,String xml,String realPath) throws Exception {
+		logger.debug("merid="+merid+"  xml="+xml+"   realPath="+realPath);
+		if(hook())
+		beforeAction(xml);
+		return this.doHandler(merid,xml,realPath);
+	}
+
+	
+	protected abstract Object doHandler(String merid,String xml,String realPath) throws Exception;
+	
+	
+	
+	
+	/**
+	 * 业务处理前的操作：封装消息模型
+	 * @param arg
+	 * @throws Exception
+	 */
+	public void beforeAction(String arg) throws Exception{
+		Object object =null;
+		Field[] fields=this.getClass().getDeclaredFields();
+		for(Field field:fields){
+			BsoftCustomField  bc=field.getAnnotation(BsoftCustomField.class);
+			if(bc!=null){
+					// object = field.getType().newInstance();
+				object=IBaseModel.loadXml2Bean(field.getType(), arg);
+					 //测试json 类型loadXml2Bean
+					// object= objectMapper.readValue(arg, field.getType());
+					isCheckData(object);
+				try {
+					field.set(this, object);
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	
+	/**
+	 * 当子类无需父类beforeAction动作时可以重写
+	 * @return
+	 */
+	protected boolean hook(){
+		return true;
+	}
+
+	// 验证数据非空
+	protected void isCheckData(Object object) {
+		
+			for (Field field : object.getClass().getDeclaredFields()) {
+				NotNull notNullCheck = field.getAnnotation(NotNull.class);
+				if (notNullCheck != null) {
+					try {
+						Object val = FieldUtils.readField(field, object, true);
+						if (val == null || StringUtils.isBlank(String.valueOf(val))) {
+							throw new BusException("字段：["+notNullCheck.name() + "]不能为空");
+						}
+					} catch (IllegalAccessException e) {
+						logger.error(e.getMessage(), e);
+					}
+				}
+			}
+			for (Method method : object.getClass().getDeclaredMethods()) {
+				NotNull notNullCheck = method.getAnnotation(NotNull.class);
+				if (notNullCheck != null) {
+					try {
+						String name = method.getName().substring(3);
+						String field = name.substring(0, 1).toLowerCase() + name.substring(1);
+						// Method m = object.getClass().getDeclaredMethod("get" +
+						// name);
+						// Object val = m.invoke(object);
+						Object val = MethodUtils.invokeMethod(object, "get" + name, null);
+						if (val == null || StringUtils.isBlank(String.valueOf(val))) {
+							throw new BusException("字段：["+notNullCheck.name() + "]不能为空");
+						}
+					} catch (IllegalAccessException e) {
+						logger.error(e.getMessage(), e);
+					} catch (NoSuchMethodException e) {
+						logger.error(e.getMessage(), e);
+					} catch (SecurityException e) {
+						logger.error(e.getMessage(), e);
+					} catch (IllegalArgumentException e) {
+						logger.error(e.getMessage(), e);
+					} catch (InvocationTargetException e) {
+						logger.error(e.getMessage(), e);
+					}
+				}
+			}
+		}
+	
+	
+	
+	public String writeToFile(String img, String merid, String contextPath) throws FileUploadException, Exception {
+		String realPath = Global.IFACEFILES_BASE_URL + File.separator + merid + "/images/";
+		BASE64Encoder encode = new BASE64Encoder();
+		String base64 = encode.encode(img.getBytes());
+		BASE64Decoder decode = new BASE64Decoder();
+		byte[] b = decode.decodeBuffer(base64);
+		ByteArrayInputStream bais = new ByteArrayInputStream(b);
+		BufferedImage bi1 = ImageIO.read(bais);
+		String fileName = IdGen.uuid() + ".bmp";
+		File w2 = new File(contextPath + realPath + fileName);// 可以是jpg,png,gif格式
+		ImageIO.write(bi1, "jpg", w2);
+		return realPath + fileName;
+	}
+	
+	
+	/**
+	 * 身份认证
+	 *
+	 * @param healthCardId
+	 * @return
+	 * @author yyl
+	 * @date 2016年6月2日 上午10:45:20
+	 */
+	protected ResResultVo checkIdentity(String healthCardId) {
+		String status = Constant.IfaceStatus.FAILURE;
+		String reason = "";
+		HpHealthcard card = hpHealthcardService.get(healthCardId);
+		if (null == card) {
+			status = Constant.IfaceStatus.FAILURE;
+			reason = "健康卡卡号错误";
+		} else {
+			if (StringUtils.isNotNull(card.getStatus()) && "2".equals(card.getStatus())) {
+				status = Constant.IfaceStatus.SUCCESS;
+			} else {
+				status = Constant.IfaceStatus.FAILURE;
+				reason = "健康卡未激活或已注销";
+			}
+		}
+		return new ResResultVo(healthCardId, status, reason);
+	}
+}
+
+

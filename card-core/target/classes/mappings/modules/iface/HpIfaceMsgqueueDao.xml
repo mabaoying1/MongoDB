@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.iface.dao.HpIfaceMsgqueueDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpIfaceMsgqueueColumns">
+		a.pkid AS "pkid",
+		a.mer_id AS "merId",
+		a.posturl AS "posturl",
+		a.funcid AS "funcid",
+		a.healthcardid AS "healthcardid",
+		a.nationality AS "nationality",
+		a.docutype AS "docutype",
+		a.docuid AS "docuid",
+		a.param0 AS "param0",
+		a.param1 AS "param1",
+		a.param2 AS "param2",
+		a.flag0 AS "flag0",
+		a.flag1 AS "flag1",
+		a.flag2 AS "flag2",
+		a.createtime AS "createtime",
+		a.lastsendtime AS "lastsendtime",
+		a.iccardid AS "icCardId",
+		a.type AS "type",
+		a.opttype as "optType",
+		a.errcount AS "errcount"
+	</sql>
+
+	<sql id="table_sequence">SEQ_HP_IFACE_MSGQUEUE.nextval</sql>
+	
+	<sql id="hpIfaceMsgqueueJoins">
+	</sql>
+	
+    
+	<select id="get" resultType="com.healthpay.modules.iface.entity.HpIfaceMsgqueue" >
+		SELECT 
+			<include refid="hpIfaceMsgqueueColumns"/>
+		FROM hp_iface_msgqueue a
+		<include refid="hpIfaceMsgqueueJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.iface.entity.HpIfaceMsgqueue" >
+		SELECT 
+			<include refid="hpIfaceMsgqueueColumns"/>
+		FROM hp_iface_msgqueue a
+		<include refid="hpIfaceMsgqueueJoins"/>
+		<where>
+			AND 1=1
+			<if test="merId != null and merId != ''">
+				AND a.mer_id like 
+					<if test="dbName == 'oracle'">'%'||#{merId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{merId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{merId},'%')</if>
+			</if>
+			<if test="funcid != null and funcid != ''">
+				AND a.funcid like 
+					<if test="dbName == 'oracle'">'%'||#{funcid}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{funcid}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{funcid},'%')</if>
+			</if>
+			<if test="healthcardid != null and healthcardid != ''">
+				AND a.healthcardid like 
+					<if test="dbName == 'oracle'">'%'||#{healthcardid}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{healthcardid}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{healthcardid},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.iface.entity.HpIfaceMsgqueue" >
+		SELECT 
+			<include refid="hpIfaceMsgqueueColumns"/>
+		FROM hp_iface_msgqueue a
+		<include refid="hpIfaceMsgqueueJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_iface_msgqueue(
+			pkid,
+			mer_id,
+			posturl,
+			funcid,
+			healthcardid,
+			nationality,
+			docutype,
+			docuid,
+			param0,
+			param1,
+			param2,
+			flag0,
+			flag1,
+			flag2,
+			createtime,
+			lastsendtime,
+			iccardId,
+			TYPE,
+		    opttype,
+			errcount
+		) VALUES (
+		    sys_guid(),
+			#{merId},
+			#{posturl},
+			#{funcid},
+			#{healthcardid},
+			#{nationality},
+			#{docutype},
+			#{docuid},
+			#{param0},
+			#{param1},
+			#{param2},
+			#{flag0},
+			#{flag1},
+			#{flag2},
+			#{createtime},
+			#{lastsendtime},
+			#{icCardId},
+		    #{type},
+		    #{optType},
+			#{errcount}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_iface_msgqueue SET
+			mer_id = #{merId},
+			posturl = #{posturl},
+			funcid = #{funcid},
+			healthcardid = #{healthcardid},
+			nationality = #{nationality},
+			docutype = #{docutype},
+			docuid = #{docuid},
+			param0 = #{param0},
+			param1 = #{param1},
+			param2 = #{param2},
+			flag0 = #{flag0},
+			flag1 = #{flag1},
+			flag2 = #{flag2},
+			createtime = #{createtime},
+			lastsendtime = #{lastsendtime},
+			iccardId = #{icCardId},
+			type = #{type},
+			opttype = #{opttype},
+			errcount = #{errcount}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_iface_msgqueue
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_iface_msgqueue SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	<update id="updateMsgQueueErrcount">
+		UPDATE HP_IFACE_MSGQUEUE SET ERRCOUNT = nvl(ERRCOUNT,0)+1,LASTSENDTIME = sysdate WHERE PKID = #{0}
+	</update>
+
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.iface.entity.HpIfaceMsgqueue" statementType="STATEMENT">
+		select * FROM hp_iface_msgqueue  where ${propertyName} = '${value}'
+	</select>
+
+	<select id="findMsgQueueList" resultType="com.healthpay.modules.iface.entity.HpIfaceMsgqueue">
+		 SELECT
+		<include refid="hpIfaceMsgqueueColumns"/>
+		FROM hp_iface_msgqueue a
+		WHERE <![CDATA[nvl(a.errcount,0) < 5 ]]>
+	</select>
+
+	<insert id="insertMsgQueueBak">
+		INSERT INTO hp_iface_msgqueue_bak(
+		pkid,
+		mer_id,
+		posturl,
+		funcid,
+		healthcardid,
+		nationality,
+		docutype,
+		docuid,
+		param0,
+		param1,
+		param2,
+		flag0,
+		flag1,
+		flag2,
+		createtime,
+		iccardId,
+		type,
+		opttype,
+		lastsendtime
+		) VALUES (
+		SEQ_HP_IFACE_MSGQUEUE_BAK.nextval,
+		#{merId},
+		#{posturl},
+		#{funcid},
+		#{healthcardid},
+		#{nationality},
+		#{docutype},
+		#{docuid},
+		#{param0},
+		#{param1},
+		#{param2},
+		#{flag0},
+		#{flag1},
+		#{flag2},
+		#{createtime},
+		#{icCardId},
+		#{type},
+		#{optType},
+		#{lastsendtime}
+		)
+	</insert>
+
+</mapper>

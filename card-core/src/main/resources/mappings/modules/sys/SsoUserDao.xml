@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.sys.dao.SsoUserDao">
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+    <!-- 根据s身份证查询用户 -->
+    <select id="getByIdNumber" resultType="com.healthpay.modules.sys.entity.SsoUser">
+        SELECT a.idNumber,a.loginname,a.isEnable
+        FROM sys_ssouser a
+        WHERE a.idNumber = #{idNumber}
+    </select>
+
+    <sql id="table_sequence">sys_ssouser_0.nextval</sql>
+
+    <!-- 插入用户 -->
+    <insert id="insert">
+        INSERT INTO sys_ssouser(
+        id,
+        loginName,
+        idNumber,
+        isEnable
+        ) VALUES (
+        sys_guid(),
+        #{loginName},
+        #{idNumber},
+        #{isEnable}
+        )
+    </insert>
+</mapper>

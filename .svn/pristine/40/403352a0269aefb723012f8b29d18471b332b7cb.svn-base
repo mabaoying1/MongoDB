@@ -1,0 +1,108 @@
+/**
+ * Copyright &copy; 2015-2020 <a href="http://www.jeeplus.org/">JeePlus</a> All rights reserved.
+ */
+package com.healthpay.modules.iface.service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.healthpay.common.utils.CacheConstants;
+import com.healthpay.common.utils.CacheUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.healthpay.common.persistence.Page;
+import com.healthpay.common.service.CrudService;
+import com.healthpay.modules.iface.entity.HpIfaceMerchant;
+import com.healthpay.modules.iface.dao.HpIfaceMerchantDao;
+
+/**
+ * 商户管理Service
+ * @author gyp
+ * @version 2016-06-14
+ */
+@Service
+@Transactional(readOnly = true)
+public class HpIfaceMerchantService extends CrudService<HpIfaceMerchantDao, HpIfaceMerchant> {
+	@Autowired
+	private HpIfaceMerchantDao hpIfaceMerchantDao;
+	public HpIfaceMerchant get(String merId) {
+		return super.get(merId);
+	}
+
+	public List<HpIfaceMerchant> findList(HpIfaceMerchant hpIfaceMerchant) {
+		return super.findList(hpIfaceMerchant);
+	}
+
+	public Page<HpIfaceMerchant> findPage(Page<HpIfaceMerchant> page, HpIfaceMerchant hpIfaceMerchant) {
+		return super.findPage(page, hpIfaceMerchant);
+	}
+
+	@Transactional(readOnly = false)
+	public void saveHpIfaceMerchant(HpIfaceMerchant hpIfaceMerchant) {
+		//super.save(hpIfaceMerchant);
+		hpIfaceMerchantDao.insert(hpIfaceMerchant);
+		//新增的商户放到缓存中
+//		Map<String,HpIfaceMerchant> merchantMap =null;
+//		if(CacheUtils.get(CacheConstants.CACHE_MERCHANT_MAP) == null){
+//			merchantMap = new HashMap<String,HpIfaceMerchant>();
+//		}else{
+//			merchantMap = (Map<String, HpIfaceMerchant>) CacheUtils.get(CacheConstants.CACHE_MERCHANT_MAP);
+//		}
+//		merchantMap.put(hpIfaceMerchant.getMerId(),hpIfaceMerchant);
+//		CacheUtils.put(CacheConstants.CACHE_MERCHANT_MAP,merchantMap);
+		this.saveToCache(hpIfaceMerchant);
+	}
+
+	public void updateHpIfacemerchant(HpIfaceMerchant hpIfaceMerchant) {
+		hpIfaceMerchantDao.update(hpIfaceMerchant);
+		this.saveToCache(hpIfaceMerchant);
+	}
+
+	private void saveToCache(HpIfaceMerchant hpIfaceMerchant){
+		Map<String,HpIfaceMerchant> merchantMap =null;
+		if(CacheUtils.get(CacheConstants.CACHE_MERCHANT_MAP) == null){
+			merchantMap = new HashMap<String,HpIfaceMerchant>();
+		}else{
+			merchantMap = (Map<String, HpIfaceMerchant>) CacheUtils.get(CacheConstants.CACHE_MERCHANT_MAP);
+		}
+		merchantMap.put(hpIfaceMerchant.getMerId(),hpIfaceMerchant);
+		CacheUtils.put(CacheConstants.CACHE_MERCHANT_MAP,merchantMap);
+	}
+	
+	@Transactional(readOnly = false)
+	public void delete(HpIfaceMerchant hpIfaceMerchant) {
+		super.delete(hpIfaceMerchant);
+	}
+	
+	public List<HpIfaceMerchant> findAllList(HpIfaceMerchant hpIfaceMerchant){
+		return hpIfaceMerchantDao.findAllList(hpIfaceMerchant);
+	}
+	
+	public HpIfaceMerchant getFormCache(String merid){
+		Map<String,HpIfaceMerchant> merchantMap =(Map<String,HpIfaceMerchant>)CacheUtils.get(CacheConstants.CACHE_MERCHANT_MAP);
+
+		HpIfaceMerchant merchant = null;
+		if(null != merchantMap && null != merchantMap.get(merid)) {
+			merchant = merchantMap.get(merid);
+		}else{
+			merchant = this.get(merid);
+			if(merchant!=null) {
+				this.saveToCache(merchant);
+			}
+		}
+		return merchant;
+
+
+	}
+
+	public HpIfaceMerchant getGateway(String merName,int source){
+		HpIfaceMerchant gateway = hpIfaceMerchantDao.getGateway(merName,source);
+		return gateway;
+	}
+
+
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpRealCardStatisticsDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<!--统计发卡量年月日-->
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpRealCardStatistics">
+		select count(1) count,d.name merName,d.createDates,d.areaName from (
+		select o.name,s.name areaName,o.area_id areaId,<if test="type==1">to_char(r.create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(r.create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(r.create_date,'yyyy')</if>  createDates from sys_office o
+		left join hp_real_card r on o.mer_id = r.str03
+		left join hp_iface_merchant m on o.mer_id = m.mer_id
+		left join sys_area s on o.area_id= s.id
+		<where>
+			<if test="areaId!=null and areaId!=''">
+				<![CDATA[and o.area_id = #{areaId}]]>
+			</if>
+			<if test="startDate!=null and startDate!=''">
+				and  <if test="type==1">to_char(r.create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(r.create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(r.create_date,'yyyy')</if><![CDATA[ >= #{startDate}]]>
+			</if>
+			<if test="endDate!=null and endDate != ''">
+				and <if test="type==1">to_char(r.create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(r.create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(r.create_date,'yyyy')</if> <![CDATA[ <= #{endDate}]]>
+			</if>
+		</where>
+		)d group by d.name,createDates,d.areaName
+		<!--<choose>
+			<when test="type!= null and type==4">
+				select d.counts count,d.merId,m.mer_name merName,d.area_id2,d.cityname2 areaName from(
+				select count(1) counts,h.str03 merId,t.area_id2,t.cityname2 from hp_real_card h ,hp_healthcard t where h.card_pkid=t.pkid and t.area_id2 is not null and t.cityname2 is not null group by h.str03,t.cityname2,t.area_id2
+				) d left join hp_iface_merchant m on d.merId = m.mer_id
+				<where>
+					<if test="merName!=null and merName != ''">
+						and m.mer_name=#{merName}
+					</if>
+					<if test="merName!=null and merName != ''">
+						and d.cityname2=#{areaName}
+					</if>
+				</where>
+			</when>
+			<otherwise>
+				select d.counts count,d.merId,d.createDates,m.mer_name merName from(
+				select count(1) counts ,str03 merId,<if test="type==1">to_char(create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(create_date,'yyyy')</if> createDates  from hp_real_card where str03 is not null  group by str03, <if test="type==1">to_char(create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(create_date,'yyyy')</if> order by str03
+				) d left join hp_iface_merchant m on d.merId = m.mer_id
+				<where>
+					<if test="merName!=null and merName != ''">
+						and m.mer_name=#{merName}
+					</if>
+				</where>
+			</otherwise>
+		</choose>-->
+	</select>
+	<select id="findListCount" resultType="java.lang.Long" parameterType="com.healthpay.modules.hc.entity.HpRealCardStatistics">
+		select count(1) count  from sys_office o
+		left join hp_real_card r on o.mer_id = r.str03
+		left join hp_iface_merchant m on o.mer_id = m.mer_id
+		left join sys_area s on o.area_id= s.id
+		<where>
+			<if test="areaId!=null and areaId!=''">
+				<![CDATA[and o.area_id = #{areaId}]]>
+			</if>
+			<if test="startDate!=null and startDate!=''">
+				and  <if test="type==1">to_char(r.create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(r.create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(r.create_date,'yyyy')</if><![CDATA[ >= #{startDate}]]>
+			</if>
+			<if test="endDate!=null and endDate != ''">
+				and <if test="type==1">to_char(r.create_date,'yyyy-MM-dd')</if><if test="type==2">to_char(r.create_date,'yyyy-MM')</if><if test="type==null or type=='' or type==3">to_char(r.create_date,'yyyy')</if> <![CDATA[ <= #{endDate}]]>
+			</if>
+		</where>
+	</select>
+</mapper>

@@ -1,0 +1,225 @@
+/**
+ * Copyright &copy; 2015-2020 <a href="http://www.jeeplus.org/">JeePlus</a> All rights reserved.
+ */
+package com.healthpay.modules.iface.entity;
+
+
+import com.healthpay.common.utils.StringUtils;
+import org.hibernate.validator.constraints.Length;
+
+import com.healthpay.common.persistence.DataEntity;
+import com.healthpay.common.utils.excel.annotation.ExcelField;
+
+/**
+ * 商户管理Entity
+ * @author gyp
+ * @version 2016-06-14
+ */
+public class HpIfaceMerchant extends DataEntity<HpIfaceMerchant> {
+	
+	private static final long serialVersionUID = 1L;
+	private String merId;		// mer_id
+	private String merName;		// mer_name
+	private String merEname;		// mer_ename
+	private String merAbbrName;		// mer_abbr_name
+	private String merAbbrEname;		// mer_abbr_ename
+	private String status;		// status
+	private String merType;		// mer_type
+	private String digitalKey;  //数字证书码
+	private String privateKey;  //私钥
+	private String publicKey;   //公钥
+	private Integer source;     //数据来源
+	private boolean isAutoAudit; //是否自动审核
+	private Integer flag02;		// flag02
+	private Integer flag01;		// flag01
+	private Integer flag00;		// flag00
+	private String str02;		// str02
+	private String str01;		// str01
+	private String str00;		// str00
+	private String remark;		// remark
+	
+	public HpIfaceMerchant() {
+		super();
+	}
+
+	public HpIfaceMerchant(String id){
+		super(id);
+	}
+
+	@ExcelField(title="mer_id", align=2, sort=0)
+	public String getMerId() {
+		return merId;
+	}
+
+	public void setMerId(String merId) {
+		this.merId = merId;
+	}
+	
+	@Length(min=1, max=100, message="商户名称长度必须介于 0 和 100 之间")
+	@ExcelField(title="mer_name", align=2, sort=1)
+	public String getMerName() {
+		return merName;
+	}
+
+	public void setMerName(String merName) {
+		this.merName = merName;
+	}
+	
+	@Length(min=0, max=100, message="英文名称长度必须介于 0 和 100 之间")
+	@ExcelField(title="mer_ename", align=2, sort=2)
+	public String getMerEname() {
+		return merEname;
+	}
+
+	public void setMerEname(String merEname) {
+		this.merEname = merEname;
+	}
+	
+	@Length(min=0, max=50, message="中文简称长度必须介于 0 和 50 之间")
+	@ExcelField(title="mer_abbr_name", align=2, sort=3)
+	public String getMerAbbrName() {
+		return merAbbrName;
+	}
+
+	public void setMerAbbrName(String merAbbrName) {
+		this.merAbbrName = merAbbrName;
+	}
+	
+	@Length(min=0, max=50, message="英文简称长度必须介于 0 和 50 之间")
+	@ExcelField(title="mer_abbr_ename", align=2, sort=4)
+	public String getMerAbbrEname() {
+		return merAbbrEname;
+	}
+
+	public void setMerAbbrEname(String merAbbrEname) {
+		this.merAbbrEname = merAbbrEname;
+	}
+	
+	@Length(min=0, max=1, message="状态长度必须介于 0 和 1 之间")
+	@ExcelField(title="status", align=2, sort=5)
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	@Length(min=0, max=1, message="商户类型长度必须介于 0 和 1 之间")
+	@ExcelField(title="mer_type", align=2, sort=6)
+	public String getMerType() {
+		return merType;
+	}
+
+	public void setMerType(String merType) {
+		this.merType = merType;
+	}
+	
+	@ExcelField(title="flag02", align=2, sort=7)
+	public Integer getFlag02() {
+		return flag02;
+	}
+
+	public void setFlag02( Integer flag02) {
+		this.flag02 = flag02;
+	}
+	
+	@ExcelField(title="flag01", align=2, sort=8)
+	public Integer getFlag01() {
+		return flag01;
+	}
+
+	public void setFlag01(Integer flag01) {
+		this.flag01 = flag01;
+	}
+	
+	@ExcelField(title="flag00", align=2, sort=9)
+	public  Integer getFlag00() {
+		return flag00;
+	}
+
+	public void setFlag00(Integer flag00) {
+		this.flag00 = flag00;
+	}
+
+	@ExcelField(title="str02", align=2, sort=10)
+	public String getStr02() {
+		return str02;
+	}
+
+	public void setStr02(String str02) {
+		this.str02 = str02;
+	}
+
+	@ExcelField(title="str01", align=2, sort=11)
+	public String getStr01() {
+		return str01;
+	}
+
+	public void setStr01(String str01) {
+		this.str01 = str01;
+	}
+
+	@ExcelField(title="str00", align=2, sort=12)
+	public String getStr00() {
+		return str00;
+	}
+
+	public void setStr00(String str00) {
+		this.str00 = str00;
+	}
+
+	@ExcelField(title="remark", align=2, sort=17)
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	@Override
+	public boolean getIsNewRecord() {
+		return isNewRecord || StringUtils.isEmpty(merId);
+	}
+
+	public String getDigitalKey() {
+		return digitalKey;
+	}
+
+	public void setDigitalKey(String digitalKey) {
+		this.digitalKey = digitalKey;
+	}
+
+	public String getPrivateKey() {
+		return privateKey;
+	}
+
+	public void setPrivateKey(String privateKey) {
+		this.privateKey = privateKey;
+	}
+
+	public String getPublicKey() {
+		return publicKey;
+	}
+
+	public void setPublicKey(String publicKey) {
+		this.publicKey = publicKey;
+	}
+
+	public Integer getSource() {
+		return source;
+	}
+
+	public void setSource(Integer source) {
+		this.source = source;
+	}
+
+	public boolean getIsAutoAudit() {
+		return isAutoAudit;
+	}
+
+	public void setIsAutoAudit(boolean isAutoAudit) {
+		this.isAutoAudit = isAutoAudit;
+	}
+}

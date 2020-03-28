@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.iface.dao.HpIfacePlatformDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<resultMap id="platformResult" type="com.healthpay.modules.iface.entity.HpIfacePlatform">
+         <id column="pkid" property="pkid"></id>
+         <result column="name" property="name"></result>
+         <result column="funcCode" property="funcCode"></result>
+         <result column="scretkey" property="scretkey"></result>
+         <result column="posturl" property="posturl"></result>
+         <result column="datatype" property="datatype"></result>
+         <result column="urltype" property="urltype"></result>
+         <result column="platformtype" property="platformtype"></result>
+         <result column="flag0" property="flag0"></result>
+         <result column="flag1" property="flag1"></result>
+         <result column="flag2" property="flag2"></result>
+         <result column="param0" property="param0"></result>
+         <result column="param1" property="param1"></result>
+         <result column="param2" property="param2"></result>
+         <collection property="hpIfacePlatformareaList" ofType="com.healthpay.modules.iface.entity.HpIfacePlatformarea">
+             <id property="pkid" column="arealist.pkid"></id>
+			 <result property="areaid" column="arealist.areaid"></result>
+             <result property="code" column="arealist.code"></result>
+             <result property="name" column="arealist.name"></result>
+             <result property="platformid" column="arealist.platformid"></result>
+			 <result property="platformtype" column="arealist.platformtype"></result>
+         </collection>
+
+	</resultMap>
+
+	<sql id="hpIfacePlatformColumns">
+		a.pkid AS "pkid",
+		a.name AS "name",
+		a.func_code AS "funcCode",
+		a.scretkey AS "scretkey",
+		a.posturl AS "posturl",
+		a.datatype AS "datatype",
+		a.urltype AS "urltype",
+		a.platformtype AS "platformtype",
+		a.flag0 AS "flag0",
+		a.flag1 AS "flag1",
+		a.flag2 AS "flag2",
+		a.param0 AS "param0",
+		a.param1 AS "param1",
+		a.param2 AS "param2"
+	</sql>
+
+	<sql id="table_sequence">SEQ_HP_IFACE_PLATFORM.nextval</sql>
+
+	<sql id="hpIfacePlatformJoins">
+	</sql>
+	
+    
+	<select id="get" resultMap="platformResult">
+		SELECT 
+			<include refid="hpIfacePlatformColumns"/>,
+		    b.pkid as "arealist.pkid",
+		    b.code as "arealist.code",
+		    b.name as "arealist.name",
+		    b.areaid as "arealist.areaid",
+		    b.platformid as "arealist.platformid",
+		    b.platformtype as "arealist.platformtype"
+		FROM hp_iface_platform a LEFT JOIN hp_iface_platformarea b
+		ON a.pkid = b.platformid
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.iface.entity.HpIfacePlatform" >
+		SELECT 
+			<include refid="hpIfacePlatformColumns"/>
+		FROM hp_iface_platform a
+		<include refid="hpIfacePlatformJoins"/>
+		<where>
+			
+			<if test="name != null and name != ''">
+				AND a.name like '%'||#{name}||'%'
+			</if>
+			<if test="funcCode != null and funcCode != ''">
+				AND a.func_code = #{funcCode}
+			</if>
+			<if test="scretkey != null and scretkey != ''">
+				AND a.scretkey = #{scretkey}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.iface.entity.HpIfacePlatform" >
+		SELECT 
+			<include refid="hpIfacePlatformColumns"/>
+		FROM hp_iface_platform a
+		<include refid="hpIfacePlatformJoins"/>
+		<where>
+			
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_iface_platform(
+			pkid,
+			name,
+			func_code,
+			scretkey,
+			posturl,
+			datatype,
+			urltype,
+			platformtype,
+			flag0,
+			flag1,
+			flag2,
+			param0,
+			param1,
+			param2
+		) VALUES (
+		   sys_guid(),
+			#{name},
+			#{funcCode},
+			#{scretkey},
+			#{posturl},
+			#{datatype},
+			#{urltype},
+			#{platformtype},
+			#{flag0},
+			#{flag1},
+			#{flag2},
+			#{param0},
+			#{param1},
+			#{param2}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_iface_platform SET
+			name = #{name},
+			func_code = #{funcCode},
+			scretkey = #{scretkey},
+			posturl = #{posturl},
+			datatype = #{datatype},
+			urltype = #{urltype},
+			platformtype = #{platformtype},
+			flag0 = #{flag0},
+			flag1 = #{flag1},
+			flag2 = #{flag2},
+			param0 = #{param0},
+			param1 = #{param1},
+			param2 = #{param2}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_iface_platform
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_iface_platform SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.iface.entity.HpIfacePlatform" statementType="STATEMENT">
+		select * FROM hp_iface_platform  where ${propertyName} = '${value}'
+	</select>
+	
+</mapper>

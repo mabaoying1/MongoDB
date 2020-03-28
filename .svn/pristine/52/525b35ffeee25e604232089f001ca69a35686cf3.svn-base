@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="schedulerTrigger" autowire="no" lazy-init="false" class="org.springframework.scheduling.quartz.SchedulerFactoryBean" destroy-method="destroy">
+        <!--可选，QuartzScheduler 启动时更新己存在的Job，这样就不用每次修改targetObject后删除qrtz_job_details表对应记录了 -->
+        <property name="overwriteExistingJobs" value="true" />
+        <!--必须的，QuartzScheduler 延时启动，应用启动完后 QuartzScheduler 再启动 -->
+        <property name="startupDelay" value="30" />
+
+        <property name="schedulerName" value="CLUSTERED_JOB_SCHEDULER"/>
+        <!-- 设置自动启动 -->
+        <property name="autoStartup" value="true" />
+        <property name="transactionManager" ref="transactionManager" />
+
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:quartz.properties" />
+        <property name="applicationContextSchedulerContextKey" value="applicationContext"/>
+        <property name="jobFactory">
+            <bean class="com.healthpay.common.framework.AutowiringSpringBeanJobFactory"/>
+        </property>
+        <property name="jobDetails">
+            <list>
+                <ref bean="msgQueueJobDetail"/>
+                <ref bean="initWebService"/>
+                <ref bean="hpYkjlXnkJobDetail" />
+                <!--<ref bean="cardAsyncJobDetail"/>-->
+            </list>
+        </property>
+        <property name="triggers">
+            <list>
+                <ref bean="msgQueueJob"/>
+                <ref bean="initWebServiceJob"/>
+                <ref bean="hpYkjlXnkJob" />
+                <!--<ref bean="cardasyncJob"/>-->
+            </list>
+        </property>
+        <property name="taskExecutor" ref="executor" />
+    </bean>
+
+
+    <!-- 增加定时器配置 -->
+    <!-- 线程执行器配置，用于任务注册 -->
+    <bean id="executor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="10" />
+        <property name="maxPoolSize" value="100" />
+        <property name="queueCapacity" value="500" />
+    </bean>
+
+    <bean id="msgQueueJobDetail"
+          class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.healthpay.iface.scheduler.HpIfaceMsgQueueJob "/>
+        <property name="durability" value="true" />
+    </bean>
+
+    <bean id="msgQueueJob" class="com.healthpay.common.framework.PersistableCronTriggerFactoryBean">
+        <property name="jobDetail" ref="msgQueueJobDetail"/>
+        <property name="startDelay" value="60000"/>
+        <property name="cronExpression" value="0 0/5 * * * ?" />
+    </bean>
+
+    <bean id="initWebService" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.healthpay.iface.business.BaseSendClient" />
+        <property name="durability" value="true" />
+    </bean>
+    <bean id="initWebServiceJob" class="com.healthpay.common.framework.PersistableCronTriggerFactoryBean">
+        <property name="jobDetail" ref="initWebService"/>
+        <property name="startDelay" value="5000"/>
+        <property name="cronExpression" value="0 0/30 * * * ?" />
+    </bean>
+
+    <!-- 电子健康卡用卡数据上传省卡管 -->
+    <bean id="hpYkjlXnkJobDetail"
+          class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="com.healthpay.iface.scheduler.HpYkjlXnkJob "/>
+        <property name="durability" value="true" />
+    </bean>
+    <bean id="hpYkjlXnkJob" class="com.healthpay.common.framework.PersistableCronTriggerFactoryBean">
+        <property name="jobDetail" ref="hpYkjlXnkJobDetail"/>
+        <property name="startDelay" value="60000"/>
+        <!-- 当天晚上11：00上传当天电子健康卡用卡监测数据 -->
+        <property name="cronExpression" value="0 */35 * * * ?" /> <!-- 0 0 23 * * ? 每天晚上11点触发 -->
+    </bean>
+
+    <!--<bean id="cardAsyncJobDetail"-->
+          <!--class="org.springframework.scheduling.quartz.JobDetailFactoryBean">-->
+        <!--<property name="jobClass" value="com.healthpay.iface.scheduler.HpIfaceCardasyncJob"/>-->
+        <!--<property name="durability" value="true" />-->
+    <!--</bean>-->
+
+    <!--<bean id="cardasyncJob" class="com.healthpay.common.framework.PersistableCronTriggerFactoryBean">-->
+        <!--<property name="jobDetail" ref="cardAsyncJobDetail"/>-->
+        <!--<property name="startDelay" value="60000"/>-->
+        <!--<property name="cronExpression" value="0 0/3 * * * ?" />-->
+    <!--</bean>-->
+
+</beans>

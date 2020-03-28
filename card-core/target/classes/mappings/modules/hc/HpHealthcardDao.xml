@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpHealthcardDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpHealthcardColumns">
+		a.pkid AS "pkid",
+		a.card_id AS "cardId",
+		a.identity_id AS
+		"identityId",
+		a.security_code AS "securityCode",
+		a.chip_serialid AS
+		"chipSerialid",
+		a.card_type AS "cardType",
+		a.version AS "version",
+		a.organization_name AS "office.name",
+		a.organization_code AS
+		"office.id",
+		a.start_date AS "startDate",
+		a.valid_date AS "validDate",
+		a.countrycode AS "countrycode",
+		a.countryname AS "countryname",
+		a.provcode AS "provcode",
+		a.provname AS "provname",
+		a.citycode AS
+		"citycode",
+		a.cityname AS "cityname",
+		a.countycode AS "countycode",
+		a.countyname AS "countyname",
+		a.towncode AS "towncode",
+		a.townname AS
+		"townname",
+		a.villagecode AS "villagecode",
+		a.villagename AS
+		"villagename",
+		a.countrycode2 AS "countrycode2",
+		a.countryname2 AS "countryname2",
+		a.provcode2 AS "provcode2",
+		a.provname2 AS "provname2",
+		a.citycode2 AS
+		"citycode2",
+		a.cityname2 AS "cityname2",
+		a.countycode2 AS "countycode2",
+		a.countyname2 AS "countyname2",
+		a.towncode2 AS "towncode2",
+		a.townname2 AS
+		"townname2",
+		a.villagecode2 AS "villagecode2",
+		a.villagename2 AS
+		"villagename2",
+		a.address AS "address",
+		a.is_openpay AS "isOpenpay",
+		a.openpay_date AS "openpayDate",
+		a.first_openpay_date AS "firstOpenpayDate",
+		a.paylimit AS "paylimit",
+		a.password AS "password",
+		a.is_pwdfree AS
+		"isPwdfree",
+		a.smalllimit AS "smalllimit",
+		a.mobile AS "mobile",
+		a.phone AS "phone",
+		a.reserved AS "reserved",
+		a.create_date AS "createDate",
+		a.create_by AS
+		"createBy.id",
+		a.create_by_name AS "createBy.name",
+		a.audit_date AS
+		"auditDate",
+		a.audit_by AS "auditBy.id",
+		a.audit_by_name AS
+		"auditBy.name",
+		a.update_date AS "updateDate",
+		a.update_by AS
+		"updateBy.id",
+		a.update_by_name AS "updateBy.name",
+		a.area_id as "area.id",
+		a.reason AS "reason",
+		a.source as "source",
+		a.url0 AS "url0",
+		a.url1 AS "url1",
+		a.url2 AS "url2",
+		a.url3 AS "url3",
+		a.url4 AS "url4",
+		a.url5 AS "url5",
+		a.flag00 AS "flag00",
+		a.flag01 AS "flag01",
+		a.flag02 AS "flag02",
+		a.flag03 AS "flag03",
+		a.flag04 AS "flag04",
+		a.flag05 AS "flag05",
+		a.str00 AS "str00",
+		a.str01 AS "str01",
+		a.str02 AS "str02",
+		a.str03 AS "str03",
+		a.str04 AS "str04",
+		a.str05 AS "str05",
+		a.str06 AS "str06",
+		a.status AS "status",
+		a.delflag AS "delflag",
+		a.remark AS "remark",
+		o.name as "area2.name",
+		b.name as "hpCardholder.name",
+		b.docu_id as "hpCardholder.docuId",
+		b.docu_type as "hpCardholder.docuType",
+		b.birth as "hpCardholder.birth",
+        b.sex as "hpCardholder.sex",
+        b.profession as "hpCardholder.profession"
+
+	</sql>
+	<sql id="table_sequence">SEQ_HP_HEALTHCARD.Nextval</sql>
+	<sql id="sinpleHpHealthcardColumns">
+		a.pkid AS "pkid",
+		a.card_id AS "cardId",
+		a.identity_id AS
+		"identityId",
+		a.security_code AS "securityCode",
+		a.chip_serialid AS
+		"chipSerialid",
+		a.card_type AS "cardType",
+		a.version AS "version",
+		a.organization_name AS "office.name",
+		a.organization_code AS
+		"office.id",
+		a.start_date AS "startDate",
+		a.valid_date AS "validDate",
+		a.countrycode AS "countrycode",
+		a.countryname AS "countryname",
+		a.provcode AS "provcode",
+		a.provname AS "provname",
+		a.citycode AS
+		"citycode",
+		a.cityname AS "cityname",
+		a.countycode AS "countycode",
+		a.countyname AS "countyname",
+		a.towncode AS "towncode",
+		a.townname AS
+		"townname",
+		a.villagecode AS "villagecode",
+		a.villagename AS
+		"villagename",
+		a.countrycode2 AS "countrycode2",
+		a.countryname2 AS "countryname2",
+		a.provcode2 AS "provcode2",
+		a.provname2 AS "provname2",
+		a.citycode2 AS
+		"citycode2",
+		a.cityname2 AS "cityname2",
+		a.countycode2 AS "countycode2",
+		a.countyname2 AS "countyname2",
+		a.towncode2 AS "towncode2",
+		a.townname2 AS
+		"townname2",
+		a.villagecode2 AS "villagecode2",
+		a.villagename2 AS
+		"villagename2",
+		a.address AS "address",
+		a.is_openpay AS "isOpenpay",
+		a.openpay_date AS "openpayDate",
+		a.first_openpay_date AS "firstOpenpayDate",
+		a.paylimit AS "paylimit",
+		a.password AS "password",
+		a.is_pwdfree AS
+		"isPwdfree",
+		a.smalllimit AS "smalllimit",
+		a.mobile AS "mobile",
+		a.phone AS "phone",
+		a.reserved AS "reserved",
+		a.create_date AS "createDate",
+		a.create_by AS
+		"createBy.id",
+		a.create_by_name AS "createBy.name",
+		a.audit_date AS
+		"auditDate",
+		a.audit_by AS "auditBy.id",
+		a.audit_by_name AS
+		"auditBy.name",
+		a.update_date AS "updateDate",
+		a.update_by AS
+		"updateBy.id",
+		a.update_by_name AS "updateBy.name",
+		a.area_id as "area.id",
+		a.area_id2 as "area2.id",
+		a.reason AS "reason",
+		a.source as "source",
+		a.url0 AS "url0",
+		a.url1 AS "url1",
+		a.flag00 AS "flag00",
+		a.str00 AS "str00",
+		a.status AS "status",
+		a.delflag AS "delflag",
+		a.remark AS "remark"
+	</sql>
+
+	<sql id="hpHealthcardJoins">
+		LEFT JOIN sys_area o on o.id = a.area_id2
+		LEFT JOIN sys_office o1 on o1.id = a.organization_code
+		LEFT JOIN hp_cardholder b on b.identity_id = a.identity_id
+	</sql>
+
+
+	<select id="get" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="sinpleHpHealthcardColumns" />
+		FROM hp_healthcard a
+		WHERE a.pkid = #{pkid}
+	</select>
+
+	<select id="getByIdentityId" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="hpHealthcardColumns" />
+		FROM hp_healthcard a
+		<include refid="hpHealthcardJoins" />
+		WHERE a.identity_id = #{identityId}
+	</select>
+	
+	<select id="getByCardIdAndStatus" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="hpHealthcardColumns" />
+		FROM hp_healthcard a
+		<include refid="hpHealthcardJoins" />
+		WHERE a.card_id = #{0} and a.status = #{1}
+	</select>
+
+	<!--通过电子健康卡id和状态来查询健康卡信息 -->
+	<select id="getByPkidAndStatus" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="hpHealthcardColumns" />
+		FROM hp_healthcard a
+		<include refid="hpHealthcardJoins" />
+		WHERE a.pkid = #{pkid} and a.status = #{status}
+	</select>
+	
+	<select id="getByIdentityIdAndStatus" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="sinpleHpHealthcardColumns" />
+		FROM hp_healthcard a
+		WHERE a.identity_id = #{0} and a.status = #{1}
+	</select>
+
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="hpHealthcardColumns" />
+		FROM hp_healthcard a
+		<include refid="hpHealthcardJoins" />
+		<where>
+		  AND 1=1 <![CDATA[ and a.update_date<sysdate ]]>
+			<if test="pkid != null and pkid != ''">
+				AND a.pkid =#{pkid}
+				<!--<if test="dbName == 'oracle'">#{pkid}||'%'</if>
+				<if test="dbName == 'mysql'">CONCAT( #{pkid}, '%')</if>-->
+			</if>
+			<if test="office != null and office.id != null and office.id != ''">
+				AND (o1.id = #{office.id} OR o1.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{office.id}||',%')</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{office.id}, ',%'))</if>
+			</if>
+			<if test="area != null and area.id != null and area.id != ''">
+				AND (o.id = #{area.id} OR o.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{area.id}||',%')</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{area.id}, ',%'))</if>
+			</if>
+			<if test="area2 != null and area2.id != null and area2.id != ''">
+				AND (o.id = #{area2.id} OR o.parent_ids LIKE
+				<if test="dbName == 'oracle'">'%,'||#{area2.id}||',%')</if>
+				<if test="dbName == 'mysql'">CONCAT('%,', #{area2.id}, ',%'))</if>
+			</if>
+			<if test="hpCardholder != null and hpCardholder.name and hpCardholder.name != ''">
+				AND b.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{hpCardholder.name}||'%'</if>
+			</if>
+			<if test="phone != null and phone != ''">
+				AND a.phone =#{phone}
+				<!--<if test="dbName == 'oracle'">'%'||#{phone}||'%'</if>
+				<if test="dbName == 'mysql'">CONCAT('%', #{phone}, '%')</if>-->
+			</if>
+			<if test="cardId != null and cardId != ''">
+				AND a.card_id =#{cardId}
+				<!--<if test="dbName == 'oracle'">'%'||#{phone}||'%'</if>
+				<if test="dbName == 'mysql'">CONCAT('%', #{phone}, '%')</if>-->
+			</if>
+		</where>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findAllList" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="hpHealthcardColumns" />
+		FROM hp_healthcard a
+		<include refid="hpHealthcardJoins" />
+		<where>
+
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="geteMaxId" resultType="java.lang.String">
+		select max(pkid) from hp_healthcard where pkid like #{0}||'%'
+	</select>
+
+
+	<insert id="insert">
+		INSERT INTO hp_healthcard(
+		pkid,
+		card_id,
+		identity_id,
+		security_code,
+		chip_serialid,
+		card_type,
+		version,
+		organization_name,
+		organization_code,
+		start_date,
+		valid_date,
+		countrycode,
+		countryname,
+		provcode,
+		provname,
+		citycode,
+		cityname,
+		countycode,
+		countyname,
+		towncode,
+		townname,
+		villagecode,
+		villagename,
+		countrycode2,
+		countryname2,
+		provcode2,
+		provname2,
+		citycode2,
+		cityname2,
+		countycode2,
+		countyname2,
+		towncode2,
+		townname2,
+		villagecode2,
+		villagename2,
+		address,
+		is_openpay,
+		openpay_date,
+		first_openpay_date,
+		paylimit,
+		password,
+		is_pwdfree,
+		smalllimit,
+		mobile,
+		phone,
+		reserved,
+		create_date,
+		create_by,
+		create_by_name,
+		audit_date,
+		audit_by,
+		audit_by_name,
+		update_date,
+		update_by,
+		update_by_name,
+		reason,
+		area_id,
+		area_id2,
+		source,
+		url0,
+		url1,
+		flag00,
+		str00,
+		status,
+		delflag,
+		remark
+		) VALUES (
+		#{pkid},
+		#{cardId},
+		#{identityId},
+		#{securityCode},
+		#{chipSerialid},
+		#{cardType},
+		#{version},
+		#{office.name},
+		#{office.id},
+		#{startDate},
+		#{validDate},
+		#{countrycode},
+		#{countryname},
+		#{provcode},
+		#{provname},
+		#{citycode},
+		#{cityname},
+		#{countycode},
+		#{countyname},
+		#{towncode},
+		#{townname},
+		#{villagecode},
+		#{villagename},
+		#{countrycode2},
+		#{countryname2},
+		#{provcode2},
+		#{provname2},
+		#{citycode2},
+		#{cityname2},
+		#{countycode2},
+		#{countyname2},
+		#{towncode2},
+		#{townname2},
+		#{villagecode2},
+		#{villagename2},
+		#{address},
+		#{isOpenpay},
+		#{openpayDate},
+		#{firstOpenpayDate},
+		#{paylimit},
+		#{password},
+		#{isPwdfree},
+		#{smalllimit},
+		#{mobile},
+		#{phone},
+		#{reserved},
+		#{createDate},
+		#{createBy.id},
+		#{createBy.name},
+		#{auditDate},
+		#{auditBy.id},
+		#{auditBy.name},
+		#{updateDate},
+		#{updateBy.id},
+		#{updateBy.name},
+		#{reason},
+		#{area.id},
+		#{area2.id},
+		#{source},
+		#{url0},
+		#{url1},
+		#{flag00},
+		#{str00},
+		#{status},
+		#{delflag},
+		#{remark}
+		)
+
+	</insert>
+
+	<update id="update">
+		UPDATE hp_healthcard SET
+		card_id = #{cardId},
+		identity_id = #{identityId},
+		security_code = #{securityCode},
+		chip_serialid = #{chipSerialid},
+		card_type = #{cardType},
+		version = #{version},
+		organization_name = #{office.name},
+		organization_code = #{office.id},
+		start_date = #{startDate},
+		valid_date = #{validDate},
+		countrycode = #{countrycode},
+		countryname = #{countryname},
+		provcode = #{provcode},
+		provname = #{provname},
+		citycode = #{citycode},
+		cityname = #{cityname},
+		countycode = #{countycode},
+		countyname = #{countyname},
+		towncode = #{towncode},
+		townname = #{townname},
+		villagecode = #{villagecode},
+		villagename = #{villagename},
+		countrycode2 = #{countrycode2},
+		countryname2 = #{countryname2},
+		provcode2 = #{provcode2},
+		provname2 = #{provname2},
+		citycode2 = #{citycode2},
+		cityname2 = #{cityname2},
+		countycode2 = #{countycode2},
+		countyname2 = #{countyname2},
+		towncode2 = #{towncode2},
+		townname2 = #{townname2},
+		villagecode2 = #{villagecode2},
+		villagename2 = #{villagename2},
+		address = #{address},
+		is_openpay = #{isOpenpay},
+		openpay_date = #{openpayDate},
+		first_openpay_date = #{firstOpenpayDate},
+		paylimit = #{paylimit},
+		password = #{password},
+		is_pwdfree = #{isPwdfree},
+		smalllimit = #{smalllimit},
+		mobile = #{mobile},
+		phone = #{phone},
+		reserved = #{reserved},
+		create_by = #{createBy.id},
+		create_by_name = #{createBy.name},
+		audit_date = #{auditDate},
+		audit_by = #{auditBy.id},
+		audit_by_name = #{auditBy.name},
+		update_date = #{updateDate},
+		update_by = #{updateBy.id},
+		update_by_name = #{updateBy.name},
+		reason = #{reason},
+		area_id = #{area.id},
+		area_id2 = #{area2.id},
+		source = #{source},
+		url0 = #{url0},
+		url1 = #{url1},
+		flag00 = #{flag00},
+		str00 = #{str00},
+		status = #{status},
+		delflag = #{delflag},
+		remark = #{remark}
+		WHERE pkid = #{pkid}
+	</update>
+
+
+	<!--物理删除 -->
+	<update id="delete">
+		DELETE FROM hp_healthcard
+		WHERE pkid = #{pkid}
+	</update>
+
+	<!--逻辑删除 -->
+	<update id="deleteByLogic">
+		UPDATE hp_healthcard SET
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.hc.entity.HpHealthcard"
+		statementType="STATEMENT">
+		select * FROM hp_healthcard where ${propertyName} =
+		'${value}'
+	</select>
+
+	<update id="updateByIdentityId">
+		UPDATE hp_healthcard SET
+		status = #{status},
+		update_date = #{updateDate},
+		update_by = #{updateBy.id},
+		update_by_name = #{updateBy.name}
+		WHERE identity_id = #{identityId}
+	</update>
+
+	<select id="getByPkid" resultType="com.healthpay.modules.hc.entity.HpHealthcard">
+		SELECT
+		<include refid="hpHealthcardColumns" />
+		FROM hp_healthcard a
+		<include refid="hpHealthcardJoins" />
+		WHERE a.pkid = #{pkid}
+	</select>
+
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpMerCardlistDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="table_sequence">seq_hp_mer_cardlist.nextval</sql>
+	<sql id="HpMerCardlistColumns">
+		a.pkid AS "pkId",
+		a.merid AS "merId",
+		a.healthcardid AS "healthCardId",
+		a.iccardid AS "iccardId",
+		a.status AS "status",
+		a.date0 AS "date0",
+		a.date1 AS "date1",
+		a.flag0 AS "flag0",
+		a.flag1 AS "flag1",
+		a.flag2 AS "flag2",
+		a.str0 AS "str0",
+		a.str1 AS "str1",
+		a.str2 AS "str2"
+	</sql>
+
+	<sql id="sinpleHpMerCardlist">
+		a.pkid AS "pkId",
+		a.merid AS "merId",
+		a.healthcardid AS "healthCardId",
+		a.iccardid AS "iccardId",
+		a.status AS "status",
+		a.date0 AS "date0",
+		a.date1 AS "date1",
+		a.flag0 AS "flag0",
+		a.flag1 AS "flag1",
+		a.flag2 AS "flag2",
+		a.str0 AS "str0",
+		a.str1 AS "str1",
+		a.str2 AS "str2"
+	</sql>
+
+	<insert id="insert">
+		INSERT INTO hp_mer_cardlist(
+		pkid,
+		merid,
+		healthcardid,
+		iccardid,
+		status,
+		date0,
+		date1,
+		flag0,
+		flag1,
+		flag2,
+		str0,
+		str1,
+		str2
+		) VALUES (
+			sys_guid(),
+			#{merId},
+			#{healthCardId},
+			#{iccardId},
+			#{status},
+			#{date0},
+			#{date1},
+			#{flag0},
+			#{flag1},
+			#{flag2},
+			#{str0},
+			#{str1},
+			#{str2}
+		)
+	</insert>
+
+	<select id="getHpMerCardlist" resultType="com.healthpay.modules.hc.entity.HpMerCardlist">
+		SELECT
+		<include refid="sinpleHpMerCardlist" />
+		FROM hp_mer_cardlist a
+		WHERE a.merid = #{0} and a.iccardId = #{1}
+	</select>
+
+	<select id="getpkId" resultType="java.lang.Long">
+		SELECT
+		a.pkid
+		FROM hp_mer_cardlist a
+		WHERE a.merid = #{0} and a.iccardId = #{1}
+	</select>
+
+	<select id="getHpMerCardlisByIccardId" resultType="java.lang.String">
+		SELECT DISTINCT merid FROM hp_mer_cardlist a WHERE a.iccardId = #{0}  and a.healthcardid= #{1}
+	</select>
+
+	<select id="getMerNameByIccardId" parameterType="java.lang.String" resultType="java.util.Map">
+  	 select b.mer_name as merchantName ,a.date0 as createDate,a.flag0 flag0  from (select merid,date0,flag0 from hp_mer_cardlist where iccardid =  #{0}) a left join hp_iface_merchant b on a.merid = b.mer_id
+    </select>
+</mapper>

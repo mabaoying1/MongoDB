@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpRealCardDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpRealCardColumns">
+		a.pkid AS "pkid",
+		a.card_pkid AS "cardPkid",
+		a.iccardid AS "iccardid",
+		a.status AS "status",
+		a.type AS "type",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.create_by_name AS "createByName.id",
+		a.update_date AS "updateDate",
+		a.update_by AS "updateBy.id",
+		a.update_by_name AS "updateByName.id",
+		a.flag00 AS "flag00",
+		a.flag01 AS "flag01",
+		a.flag02 AS "flag02",
+		a.flag03 AS "flag03",
+		a.flag04 AS "flag04",
+		a.flag05 AS "flag05",
+		a.str00 AS "str00",
+		a.str01 AS "str01",
+		a.str02 AS "str02",
+		a.str03 AS "str03",
+		a.str04 AS "str04",
+		a.str05 AS "str05",
+		d.name  AS "hpHealthcard.hpCardholder.name"
+	</sql>
+	
+	<sql id="hpRealCardJoins">
+		LEFT JOIN hp_healthcard c on c.pkid = a.card_pkid
+		LEFT JOIN hp_cardholder d on d.identity_id = c.identity_id
+	</sql>
+
+	<sql id="hpRealCardJoins_Condition">
+		LEFT JOIN hp_healthcard c ON c.pkid = a.card_pkid
+		LEFT JOIN hp_cardholder b ON b.identity_id = c.identity_id
+	</sql>
+
+	<sql id="table_sequence">seq_hp_real_card.nextval</sql>
+    
+	<select id="get" resultType="com.healthpay.modules.hc.entity.HpRealCard" >
+		SELECT 
+			<include refid="hpRealCardColumns"/>
+		FROM hp_real_card a
+		<include refid="hpRealCardJoins"/>
+		WHERE a.pkid = #{pkid}
+	</select>
+	
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpRealCard" >
+		SELECT 
+			<include refid="hpRealCardColumns"/>
+		FROM hp_real_card a
+		LEFT JOIN hp_healthcard c ON c.pkid = a.card_pkid
+		left join hp_cardholder d on c.identity_id = d.identity_id
+		<where>
+			AND 1=1 <![CDATA[ and a.update_date<sysdate ]]>
+			<if test="cardPkid != null and cardPkid != ''">
+				AND a.card_pkid =#{cardPkid}
+			</if>
+			<if test="iccardid != null and iccardid != ''">
+				AND a.iccardid =#{iccardid}
+			</if>
+			<if test="status != null">
+				AND a.status= #{status}
+			</if>
+			<if test="type != null ">
+				AND a.type = #{type}
+			</if>
+			<if test="hpHealthcard != null and hpHealthcard.hpCardholder.name != null and hpHealthcard.hpCardholder.name != ''">
+				AND d.name LIKE
+				<if test="dbName == 'oracle'">'%'||#{hpHealthcard.hpCardholder.name}||'%'</if>
+			</if>
+			<if test="hpHealthcard != null and hpHealthcard.hpCardholder.docuType != null and hpHealthcard.hpCardholder.docuType != ''">
+				AND d.docu_type LIKE
+				<if test="dbName == 'oracle'">'%'||#{hpHealthcard.hpCardholder.docuType}||'%'</if>
+			</if>
+			<if test="hpHealthcard != null and hpHealthcard.hpCardholder.docuId != null and hpHealthcard.hpCardholder.docuId != ''">
+				AND d.docu_Id LIKE
+				<if test="dbName == 'oracle'">'%'||#{hpHealthcard.hpCardholder.docuId}||'%'</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!--获取该用户办理的实体卡通过某些条件-->
+	<select id="findListByCondition" resultType="com.healthpay.modules.hc.entity.HpRealCard"  parameterType="com.healthpay.modules.hc.search.HpRealCardSearch">
+		SELECT
+		a.card_pkid AS "cardPkid",
+		a.iccardid AS "iccardid",
+		a.status AS "status",
+		a.type AS "type"
+		FROM hp_real_card a
+		<include refid="hpRealCardJoins_Condition"/>
+		<where>
+			1 = 1
+		</where>
+		<choose>
+			<when test="healthCardId!= null and healthCardId!=''">
+				AND card_pkid=#{healthCardId}
+			</when>
+			<otherwise>
+				AND b.docu_id = #{docuId}
+				AND b.docu_type = #{docuType}
+				AND b.nationality = #{nationality}
+			</otherwise>
+		</choose>
+
+
+	</select>
+	
+	<select id="findAllList" resultType="com.healthpay.modules.hc.entity.HpRealCard" >
+		SELECT 
+			<include refid="hpRealCardColumns"/>
+		FROM hp_real_card a
+		<include refid="hpRealCardJoins"/>
+		<where>
+			AND 1=1 <![CDATA[ and a.update_date<sysdate ]]>
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO hp_real_card(
+			pkid,
+			card_pkid,
+			iccardid,
+			status,
+			type,
+			create_date,
+			create_by,
+			create_by_name,
+			update_date,
+			update_by,
+			update_by_name,
+			flag00,
+			flag01,
+			flag02,
+			flag03,
+			flag04,
+			flag05,
+			str00,
+			str01,
+			str02,
+			str03,
+			str04,
+			str05
+		) VALUES (
+		    sys_guid(),
+			#{cardPkid},
+			#{iccardid},
+			#{status},
+			#{type},
+			#{createDate},
+			#{createBy.id},
+			#{createByName.id},
+			#{updateDate},
+			#{updateBy.id},
+			#{updateByName.id},
+			#{flag00},
+			#{flag01},
+			#{flag02},
+			#{flag03},
+			#{flag04},
+			#{flag05},
+			#{str00},
+			#{str01},
+			#{str02},
+			#{str03},
+			#{str04},
+			#{str05}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE hp_real_card SET
+			card_pkid = #{cardPkid},
+			iccardid = #{iccardid},
+			status = #{status},
+			type = #{type},
+			create_by_name = #{createByName.id},
+			update_date = #{updateDate},
+			update_by = #{updateBy.id},
+			update_by_name = #{updateByName.id},
+			flag00 = #{flag00},
+			flag01 = #{flag01},
+			flag02 = #{flag02},
+			flag03 = #{flag03},
+			flag04 = #{flag04},
+			flag05 = #{flag05},
+			str00 = #{str00},
+			str01 = #{str01},
+			str02 = #{str02},
+			str03 = #{str03},
+			str04 = #{str04},
+			str05 = #{str05}
+		WHERE pkid = #{pkid}
+	</update>
+	
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM hp_real_card
+		WHERE pkid = #{pkid}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE hp_real_card SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE pkid = #{pkid}
+	</update>
+	<update id="updateRealCardStatus">
+		UPDATE hp_real_card set status=#{1} where card_pkid=#{0} and type=#{3} and status=#{2}
+	</update>
+
+
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="com.healthpay.modules.hc.entity.HpRealCard" statementType="STATEMENT">
+		select * FROM hp_real_card  where ${propertyName} = '${value}'
+	</select>
+	<select id="getHealthCardId" resultType="com.healthpay.modules.hc.entity.HpRealCard">
+		select * FROM hp_real_card a where a.iccardid=#{0} and a.status=#{1} and a.type=#{2}
+	</select>
+
+	<select id="getHealthCardIdTwo" resultType="com.healthpay.modules.hc.entity.HpRealCard">
+		select * FROM hp_real_card a where a.iccardid=#{0}  and a.type=#{1} and a.status=1
+	</select>
+	<select id="getIcCardId" resultType="com.healthpay.modules.hc.entity.HpRealCard">
+		select * FROM hp_real_card a where a.card_pkid=#{0} and a.status=#{1} and a.type=#{2}
+	</select>
+	<select id="getCount" resultType="java.lang.Integer">
+		SELECT count(a.pkid) FROM hp_real_card a WHERE  a.type = #{type} and status = 1
+		<if test="cardPkid != null and cardPkid != ''">
+			AND a.card_pkid = #{cardPkid}
+		</if>
+		<if test="iccardid != null and iccardid != ''">
+			AND a.iccardid = #{iccardid}
+		</if>
+	</select>
+
+	<update id="updateRealCardStatusByPkid">
+		UPDATE hp_real_card set status=#{1} where pkid=#{0}
+	</update>
+
+	<select id="getHealthCardIdNotCancel" resultType="com.healthpay.modules.hc.entity.HpRealCard">
+		select * FROM hp_real_card a where a.iccardid=#{0}  and a.type=#{1} and a.status!=0
+	</select>
+
+	<select id="getIcCardNotCancel" resultType="com.healthpay.modules.hc.entity.HpRealCard">
+		select * FROM hp_real_card a where a.card_pkid=#{0}  and a.type=#{1} and a.status != 0
+	</select>
+	<!-- 根据实体卡号和类型查询所有状态实体卡 -->
+	<select id="getRealCard" resultType="com.healthpay.modules.hc.entity.HpRealCard">
+		select * FROM hp_real_card a where a.iccardid=#{0}  and a.type=#{1}
+	</select>
+
+</mapper>

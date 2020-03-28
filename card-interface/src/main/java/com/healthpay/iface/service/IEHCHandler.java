@@ -1,0 +1,15 @@
+package com.healthpay.iface.service;
+
+/**    
+* @ClassName: IEHCHandler 
+* @Description: TODO(这里用一句话描述这个类的作用) 
+* @author mabaoying
+* @date 2019年7月30日
+* @最后修改人：
+* @最后修改时间：
+*/
+public interface IEHCHandler {
+	
+	 Object RHCMessageServer(String appId,String appSecret,String xml,String realPath) throws Exception;
+
+}

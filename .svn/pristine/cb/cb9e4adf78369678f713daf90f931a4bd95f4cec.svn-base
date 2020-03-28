@@ -1,0 +1,58 @@
+package com.healthpay.iface.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.healthpay.common.exception.BusException;
+import com.healthpay.iface.annotation.BsoftCustomField;
+import com.healthpay.iface.util.StringUtils;
+import com.healthpay.iface.vo.A1024VO;
+import com.healthpay.iface.vo.RealCardVo;
+import com.healthpay.iface.vo.ResResultRealCardListVO;
+import com.healthpay.iface.vo.ReturnVo;
+import com.healthpay.modules.hc.entity.HpCardholder;
+import com.healthpay.modules.hc.entity.HpRealCard;
+import com.healthpay.modules.hc.search.HpRealCardSearch;
+/**    
+* @ClassName: A1024
+* @Description: 已绑实体健康卡列表查询
+* @author mabaoying
+* @date 2019年7月30日
+* @最后修改人：
+* @最后修改时间：
+*/
+@Service
+public class A1024 extends EHCAbstractHandlerImpl{
+	@BsoftCustomField
+	HpRealCardSearch search;
+	
+	public Object doHandler(String appId,String appSecret,String realPath) throws Exception {
+		if (StringUtils.isEmpty(search.getDocuId()) && StringUtils.isEmpty(search.getDocuType())
+				&& StringUtils.isEmpty(search.getNationality())) {// Nationality、DocuType、docuId都不为空的时候。健康E卡号不能为空
+			if (StringUtils.isEmpty(search.getHealthCardId())) {
+				throw new BusException("健康E卡号不能为空");
+			}
+		} else if (StringUtils.isEmpty(search.getHealthCardId()) && (StringUtils.isEmpty(search.getDocuId())
+				|| StringUtils.isEmpty(search.getDocuType()) || StringUtils.isEmpty(search.getNationality()))) {
+			throw new BusException("国籍证件类型证件号码不能为空");
+		}
+		ResResultRealCardListVO resResultA1024ListVO = new ResResultRealCardListVO();
+		//获取全部实体卡
+		List<HpRealCard> list = hpRealCardService.findListByCondition(search);
+		List<A1024VO> a1024VOList = new ArrayList<A1024VO>();
+		for (HpRealCard hp : list) {
+			A1024VO a1024VO = new A1024VO();
+			a1024VO.setHealthCardId(hp.getCardPkid());
+			a1024VO.setIcCardId(hp.getIccardid());
+			a1024VO.setStatus(hp.getStatus());
+			a1024VO.setType(hp.getType());
+			a1024VOList.add(a1024VO);
+		}
+		resResultA1024ListVO.setA1024VOList(a1024VOList);
+		return resResultA1024ListVO;
+	}
+
+}

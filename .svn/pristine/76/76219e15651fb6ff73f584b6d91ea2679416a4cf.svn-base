@@ -1,0 +1,129 @@
+package com.healthpay.iface.service.impl;
+
+import com.alibaba.fastjson.JSONObject;
+import com.healthpay.common.entity.ProRequest;
+import com.healthpay.common.entity.ProResponse;
+import com.healthpay.common.exception.BusException;
+import com.healthpay.common.service.proCard.IPCardService;
+import com.healthpay.common.utils.DateUtils;
+import com.healthpay.iface.annotation.BsoftCustomField;
+import com.healthpay.iface.util.StringUtils;
+import com.healthpay.iface.vo.QueryParamVO;
+import com.healthpay.iface.vo.ResResultHealthCardVo;
+import com.healthpay.modules.hc.entity.HpCardholder;
+import com.healthpay.modules.hc.entity.HpHealthcard;
+import com.healthpay.modules.hc.service.HpHealthcardService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+* @ClassName: A1029
+* @Description: 查询电子健康卡信息
+* @author mabaoying
+* @date 2019年8月14日
+* @最后修改人：
+* @最后修改时间：
+*/
+@Service
+public class A1028 extends EHCAbstractHandlerImpl{
+	@BsoftCustomField
+	QueryParamVO vo;
+	@Autowired
+	HpHealthcardService hpHealthcardService;
+	@Autowired
+	private IPCardService proCardService;
+
+	public Object doHandler(String merid,String xml,String realPath) throws Exception {
+		ResResultHealthCardVo healthCardVo=new ResResultHealthCardVo();
+		String healthCardId=vo.getHealthCardId();
+		String docuType=vo.getDocuType();
+		String docuId=vo.getDocuId();
+		String rzfs=vo.getRzfs();
+		String rzzl=vo.getRzzl();
+
+		if(StringUtils.isBlank(healthCardId) && (StringUtils.isBlank(docuType) || StringUtils.isBlank(docuId))){
+			throw new BusException("电子健康卡号或者（证件类型，证件号）不能同时为空!");
+		}
+
+		if(StringUtils.isBlank(rzfs)){
+			throw new BusException("认证模式不能为空!");
+		}
+
+		//本地卡管查询电子健康卡记录,若不存在，再从省卡管查询
+		HpHealthcard hpHealthcard;
+		if(StringUtils.isNotBlank(healthCardId)){
+			hpHealthcard = hpHealthcardService.getByPkidAndStatus(healthCardId,"2");
+		}else{
+			hpHealthcard = hpHealthcardService.getByIdentityIdAndStatus(docuType+docuId,"2");
+		}
+
+		try{
+			if(null!=hpHealthcard){
+				//查询持卡人信息
+				HpCardholder hpCardholder = hpCardholderService.get(hpHealthcard.getIdentityId());
+				//封装响应参数
+				healthCardVo.setHealthCardId(healthCardId);
+				healthCardVo.setMindexId(hpHealthcard.getCardId());
+				healthCardVo.setDocuType(hpCardholder.getDocuType());
+				healthCardVo.setDocuId(hpCardholder.getDocuId());
+				healthCardVo.setName(hpCardholder.getName());
+				healthCardVo.setSex(String.valueOf(hpCardholder.getSex()));
+				healthCardVo.setNation(hpCardholder.getNation());
+				healthCardVo.setNationality(hpCardholder.getNationality());
+				healthCardVo.setAddress(hpCardholder.getAddress());
+				healthCardVo.setBirth(hpCardholder.getBirth());
+				healthCardVo.setPhone(hpCardholder.getPhone());
+				healthCardVo.setTel(hpCardholder.getTel());
+				healthCardVo.setAddress2(hpCardholder.getAddress2());
+				healthCardVo.setProfession(hpCardholder.getProfession());
+				healthCardVo.setMaritalStatus(hpCardholder.getMaritalStatus());
+			}else{
+				//查询电子健康卡信息
+				Map<String, Object> content = new HashMap<>();
+				if(StringUtils.isNotBlank(healthCardId)){
+					content.put("ehealth_card_id", healthCardId);//电子健康卡id
+				}else {
+					content.put("id_type", docuType);//证件类型
+					content.put("id_no", docuId);//证件号
+				}
+				content.put("rzfs", rzfs);//认证模式
+				content.put("file1",rzzl);//认证资料
+				ProRequest proRequest = new ProRequest();
+				proRequest.setMethod("ehc.ehealthcode.query");//查询电子健康卡信息接口名称
+				proRequest.setBiz_content(JSONObject.toJSONString(content));//请求参数集合
+				ProResponse proResponse = proCardService.process(proRequest);//发送请求
+
+				//请求失败
+				if(!"10".equals(proResponse.getCode())){  //10成功   00失败
+					throw new BusException(proResponse.getMessage());
+				}
+				//封装响应参数
+				JSONObject jsonObject = JSONObject.parseObject(proResponse.getBiz_content());
+				healthCardVo.setHealthCardId(jsonObject.getString("ehealth_card_id"));
+				healthCardVo.setMindexId(jsonObject.getString("mindex_id"));
+				healthCardVo.setDocuType(jsonObject.getString("id_type"));
+				healthCardVo.setDocuId(jsonObject.getString("id_no"));
+				healthCardVo.setName(jsonObject.getString("name"));
+				healthCardVo.setSex(jsonObject.getString("gender"));
+				healthCardVo.setNation(jsonObject.getString("nation"));
+				healthCardVo.setNationality(jsonObject.getString("nation"));
+				healthCardVo.setAddress(jsonObject.getString("domicile"));
+				Date birth=DateUtils.parseDate(jsonObject.getString("birthday"));
+				healthCardVo.setBirth(birth);
+				healthCardVo.setPhone(jsonObject.getString("cellphone"));
+				healthCardVo.setTel(jsonObject.getString("telephone"));
+				healthCardVo.setAddress2(jsonObject.getString("address"));
+				healthCardVo.setProfession(jsonObject.getString("workcode"));
+				healthCardVo.setMaritalStatus(jsonObject.getString("maritalstatus"));
+			}
+			return healthCardVo;
+		}catch (Exception e){
+			throw new BusException("服务异常!");
+		}
+	}
+	
+}

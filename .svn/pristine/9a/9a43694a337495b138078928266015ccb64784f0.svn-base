@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.healthpay.modules.hc.dao.HpRealCardStockDao">
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+	<sql id="hpRealCardStockCommon">
+		a.PKID AS "pkid",
+		a.SEND_ORGANI_CODE AS "sendOrganiCode",
+
+		a.CARDNO_MAX_IN_STOCK AS "cardNOMaxInStock",
+		a.CARDNO_MAX_OUT_STOCK AS "cardNOMaxOutStock",
+		a.STOCK_MOUNT AS "stockMount",
+		a.GMT_CREATED AS "gmtCreated",
+		a.GMT_MODIFIEND AS "gmtModifiend",
+		a.receive_total_mount as "receiveTotalMount"
+	</sql>
+
+	<sql id="table_sequence">SEQ_HP_REAL_CARD_STOCK.nextval</sql>
+	<!--查询条件-->
+	<sql id="HpRealCardStockCon">
+		<if test="sendOrganiCode != null and sendOrganiCode !=''">
+			and a.SEND_ORGANI_CODE=#{sendOrganiCode}
+		</if>
+		<if test="sendOrganiName != null and sendOrganiName !=''">
+			and s.name  like '%'||#{sendOrganiName}||'%'
+		</if>
+		<if test="cardNOMaxInStock != null and cardNOMaxInStock !=''">
+			and a.CARDNO_MAX_IN_STOCK=#{cardNOMaxInStock}
+		</if>
+		<if test="cardNOMaxOutStock != null and cardNOMaxOutStock !=''">
+			and a.CARDNO_MAX_OUT_STOCK=#{cardNOMaxOutStock}
+		</if>
+	</sql>
+	<!--修改条件-->
+	<sql id="HpRealCardStockUpdCon">
+		<if test="sendOrganiCode != null and sendOrganiCode !=''">
+			and a.SEND_ORGANI_CODE=#{sendOrganiCode}
+		</if>
+	</sql>
+	<sql id="HpRealCardStockUpd">
+		<if test="cardNOMaxInStock != null and cardNOMaxInStock !=''">
+			a.CARDNO_MAX_IN_STOCK=#{cardNOMaxInStock},
+		</if>
+		<if test="cardNOMaxOutStock != null and cardNOMaxOutStock !=''">
+			a.CARDNO_MAX_OUT_STOCK=#{cardNOMaxOutStock},
+		</if>
+		<if test="stockMount != null and stockMount !=''">
+			a.STOCK_MOUNT=a.STOCK_MOUNT+#{stockMount},
+			<if test="type == 2"><!--出库库，机构 （医院）接受总数量加-->
+				a.receive_total_mount=a.receive_total_mount-#{stockMount},
+			</if>
+		</if>
+
+		<if test="true">
+			a.GMT_MODIFIEND=sysdate,
+		</if>
+	</sql>
+	<sql id="leftJoin">
+		left join (
+		select s.id,s.name,h1.count  from sys_office s left join
+		(select str03 as mer_id,count(1) count from hp_real_card where type=0  group by str03) h1 on s.mer_id = h1.mer_id
+		) o  on o.code=a.send_organi_code
+	</sql>
+	<!--	<insert id="insert" parameterType="com.healthpay.modules.hc.entity.HpRealCardStock" >
+            <selectKey keyProperty="pkid" resultType="java.lang.Integer" order="BEFORE">
+                　select <include refid="table_sequence" /> a from dual
+            </selectKey>
+            insert into hp_real_card_stock(
+                PKID,SEND_ORGANI_CODE,SEND_ORGANI_NAME,CARDNO_MAX_IN_STOCK,CARDNO_MAX_OUT_STOCK,STOCK_MOUNT,SEND_CARD_MOUONT,GMT_CREATED,GMT_MODIFIEND
+            )
+            VALUES {
+                #{pkid},#{sendOrganiCode},#{sendOrganiName},#{cardNOMaxInStock},#{cardNOMaxOutStock},#{stockMount},#{sendCardMount},sysdate,sysdate
+            }
+        </insert>-->
+
+	<insert id="insertRealCardStock" parameterType="com.healthpay.modules.hc.entity.HpRealCardStock" >
+		insert into hp_real_card_stock(
+		PKID,SEND_ORGANI_CODE,CARDNO_MAX_IN_STOCK,CARDNO_MAX_OUT_STOCK,STOCK_MOUNT,GMT_CREATED,GMT_MODIFIEND
+		)
+		VALUES(
+		sys_guid(),#{sendOrganiCode},#{cardNOMaxInStock},#{cardNOMaxOutStock},#{stockMount},sysdate,sysdate
+		)
+	</insert>
+
+	<select id="getHpRealCardStock" resultType="com.healthpay.modules.hc.entity.HpRealCardStock" parameterType="com.healthpay.modules.hc.search.HpRealCardStockSearch">
+		SELECT
+		<include refid="hpRealCardStockCommon"/>
+		FROM hp_real_card_stock a
+		<where>
+			<include refid="HpRealCardStockCon"/>
+		</where>
+	</select>
+
+	<select id="findList" resultType="com.healthpay.modules.hc.entity.HpRealCardStock" >
+		SELECT h1.count realSendCardCount,s.name AS "sendOrganiName",h2.count cancel,h3.count notcancel,
+		a.PKID AS "pkid",
+		a.SEND_ORGANI_CODE AS "sendOrganiCode",
+
+		a.CARDNO_MAX_IN_STOCK AS "cardNOMaxInStock",
+		a.CARDNO_MAX_OUT_STOCK AS "cardNOMaxOutStock",
+		a.STOCK_MOUNT AS "stockMount",
+		a.GMT_CREATED AS "gmtCreated",
+		a.GMT_MODIFIEND AS "gmtModifiend",
+		a.receive_total_mount as "receiveTotalMount"
+		FROM sys_office s LEFT  JOIN
+		(select str03 as mer_id,count(1) count from hp_real_card where type=0  group by str03) h1
+		on h1.mer_id = s.mer_id LEFT  JOIN
+		(select str03 as mer_id,count(1) count from hp_real_card where type=0 and status=0  group by str03) h2
+		on h2.mer_id = s.mer_id LEFT  JOIN
+		(select str03 as mer_id,count(1) count from hp_real_card where type=0 and status!=0  group by str03) h3
+		on h3.mer_id = s.mer_id
+		LEFT  JOIN
+		hp_real_card_stock a on s.code=a.send_organi_code
+		<where>
+			a.SEND_ORGANI_CODE is not null
+			<if test="sendOrganiCode != null and sendOrganiCode !=''">
+				and a.SEND_ORGANI_CODE=#{sendOrganiCode}
+			</if>
+			<if test="sendOrganiName != null and sendOrganiName !=''">
+				and s.name  like '%'||#{sendOrganiName}||'%'
+			</if>
+			<if test="cardNOMaxInStock != null and cardNOMaxInStock !=''">
+				and a.CARDNO_MAX_IN_STOCK=#{cardNOMaxInStock}
+			</if>
+			<if test="cardNOMaxOutStock != null and cardNOMaxOutStock !=''">
+				and a.CARDNO_MAX_OUT_STOCK=#{cardNOMaxOutStock}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY s.CREATE_date DESC
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findWithDate" resultType="com.healthpay.modules.hc.entity.HpRealCardStock" >
+		SELECT h1.count realSendCardCount,s.name AS "sendOrganiName",h2.count cancel,h3.count notcancel,
+		<include refid="hpRealCardStockCommon"/>
+		FROM sys_office s LEFT  JOIN
+		(select str03 as mer_id,count(1) count from hp_real_card <where> <include refid="whereDate" /> and type=0 </where> group by str03) h1
+		on h1.mer_id = s.mer_id LEFT  JOIN
+		(select str03 as mer_id,count(1) count from hp_real_card <where> <include refid="whereDate" /> and type=0 and status=0 </where>  group by str03) h2
+		on h2.mer_id = s.mer_id LEFT  JOIN
+		(select str03 as mer_id,count(1) count from hp_real_card <where> <include refid="whereDate" /> and type=0 and status!=0 </where>  group by str03) h3
+		on h3.mer_id = s.mer_id
+		LEFT  JOIN
+		hp_real_card_stock a on s.code=a.send_organi_code
+		<where>
+			a.SEND_ORGANI_CODE is not null
+			<if test="organCode != null and organCode !=''">
+				and a.SEND_ORGANI_CODE=#{organCode}
+			</if>
+			<if test="organName != null and organName !=''">
+				and s.name  like '%'||#{organName}||'%'
+			</if>
+		</where>
+				ORDER BY s.CREATE_date DESC
+	</select>
+
+	<sql id="whereDate">
+		<if test="startDate != null and startDate !=''">
+			create_date &gt;=to_date(#{startDate},'yyyy-mm-dd')
+		</if>
+		<if test="endDate != null and endDate !=''">
+			and create_date &lt;=to_date(#{endDate},'yyyy-mm-dd')
+		</if>
+	</sql>
+
+	<select id="findCancel" resultType="java.lang.Integer">
+	select count(1) from
+	(select p.code code,p.name name from hp_real_card h right join sys_office p on h.str03 = p.mer_id where h.type=0 and h.status=0) s
+	left join hp_real_card_stock a on s.code = a.send_organi_code
+	<where>
+		<include refid="HpRealCardStockCon" />
+	</where>
+	</select>
+
+	<select id="findCancelWithDate" resultType="java.lang.Integer">
+		select count(1) from
+		(select p.code code,p.name name,h.str03,h.create_date from hp_real_card h right join sys_office p on h.str03 = p.mer_id where h.type=0 and h.status=0) s
+		left join hp_real_card_stock a on s.code = a.send_organi_code
+		<where>
+			<if test="startDate != null and startDate !=''">
+				s.create_date &gt;=to_date(#{startDate},'yyyy-mm-dd')
+			</if>
+			<if test="endDate != null and endDate !=''">
+				and s.create_date &lt;=to_date(#{endDate},'yyyy-mm-dd')
+			</if>
+			<if test="organCode != null and organCode !=''">
+				and s.code=#{organCode}
+			</if>
+			<if test="organName != null and organName !=''">
+				and s.name  like '%'||#{organName}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="findNotCancel" resultType="java.lang.Integer">
+		select count(1) from
+		(select p.code code,p.name name from hp_real_card h right join sys_office p on h.str03 = p.mer_id where h.type=0 and h.status!=0) s
+		left join hp_real_card_stock a on s.code = a.send_organi_code
+		<where>
+			<include refid="HpRealCardStockCon" />
+		</where>
+	</select>
+
+	<select id="findNotCancelWithDate" resultType="java.lang.Integer">
+		select count(1) from
+		(select p.code code,p.name name,h.str03,h.create_date from hp_real_card h right join sys_office p on h.str03 = p.mer_id where h.type=0 and h.status!=0) s
+		left join hp_real_card_stock a on s.code = a.send_organi_code
+		<where>
+			<if test="startDate != null and startDate !=''">
+				s.create_date &gt;=to_date(#{startDate},'yyyy-mm-dd')
+			</if>
+			<if test="endDate != null and endDate !=''">
+				and s.create_date &lt;=to_date(#{endDate},'yyyy-mm-dd')
+			</if>
+			<if test="organCode != null and organCode !=''">
+				and s.code=#{organCode}
+			</if>
+			<if test="organName != null and organName !=''">
+				and s.name  like '%'||#{organName}||'%'
+			</if>
+		</where>
+	</select>
+
+	<select id="findTotal" resultType="java.lang.Integer">
+		select count(1) from
+		(select p.code code,p.name name from hp_real_card h right join sys_office p on h.str03 = p.mer_id where h.type=0) s
+		left join hp_real_card_stock a on s.code = a.send_organi_code
+		<where>
+			<include refid="HpRealCardStockCon" />
+		</where>
+	</select>
+
+	<select id="findTotalWithDate" resultType="java.lang.Integer">
+		select count(1) from
+		(select p.code code,p.name name,h.str03,h.create_date from hp_real_card h right join sys_office p on h.str03 = p.mer_id where h.type=0) s
+		left join hp_real_card_stock a on s.code = a.send_organi_code
+		<where>
+			<if test="startDate != null and startDate !=''">
+				s.create_date &gt;=to_date(#{startDate},'yyyy-mm-dd')
+			</if>
+			<if test="endDate != null and endDate !=''">
+				and s.create_date &lt;=to_date(#{endDate},'yyyy-mm-dd')
+			</if>
+			<if test="organCode != null and organCode !=''">
+				and s.code=#{organCode}
+			</if>
+			<if test="organName != null and organName !=''">
+				and s.name  like '%'||#{organName}||'%'
+			</if>
+		</where>
+	</select>
+
+	<update id="update" parameterType="com.healthpay.modules.hc.entity.HpRealCardStock" >
+		update hp_real_card_stock a
+		<set>
+			<include refid="HpRealCardStockUpd"/>
+		</set>
+		<where>
+			<include refid="HpRealCardStockUpdCon"/>
+		</where>
+	</update>
+</mapper>
